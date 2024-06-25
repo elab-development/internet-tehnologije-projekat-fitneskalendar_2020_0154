@@ -13,9 +13,18 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('dogadjajs', function (Blueprint $table) {
+        Schema::create('dogadjajs', function (Blueprint $table) {   
             $table->id();
+            $table->unsignedBigInteger('idTipaDogadjaja');
+            $table->unsignedBigInteger('idKorisnika');
+            $table->dateTime('datumVremeOd');
+            $table->dateTime('datumVremeDo');
+            $table->text('opis')->nullable();
+            $table->string('lokacija');
+            $table->string('naslov');
+            $table->boolean('privatnost');
             $table->timestamps();
+           
         });
     }
 

@@ -15,6 +15,8 @@ return new class extends Migration
     {
         Schema::create('tip_dogadjajas', function (Blueprint $table) {
             $table->id();
+            $table->string('naziv');
+            $table->text('opis')->nullable();
             $table->timestamps();
         });
     }

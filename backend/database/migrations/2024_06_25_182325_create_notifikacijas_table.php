@@ -15,6 +15,9 @@ return new class extends Migration
     {
         Schema::create('notifikacijas', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('idDogadjaja');
+            $table->dateTime('vremeSlanja');
+            $table->text('poruka');
             $table->timestamps();
         });
     }

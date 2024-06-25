@@ -9,8 +9,9 @@ class Notifikacija extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'ddDogadjaja',
-        'poruka'
+        'idDogadjaja',
+        'poruka',
+       'vremeSlanja'
     ];
 
     public function dogadjaj()

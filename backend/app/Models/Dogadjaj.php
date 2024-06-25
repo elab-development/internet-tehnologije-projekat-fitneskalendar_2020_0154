@@ -11,11 +11,12 @@ class Dogadjaj extends Model
     protected $fillable = [
         "idTipaDogadjaja",
         "idKorisnika",
+        "naslov",
         "datumVremeOd",
         "datumVremeDo",
         "opis",
         "lokacija",
-        'privatnost'
+        "privatnost"
     ];
 
     public function korisnik()
