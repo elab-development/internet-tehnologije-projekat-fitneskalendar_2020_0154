@@ -18,9 +18,13 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        //nema id polja jer kada se koristi Eloquent ORM za kreiranje
+        //novog reda u bazi, Laravel sam generise id
+        'ime',
+        'prezime',
         'email',
-        'password',
+        'lozinka',
+        'uloga'
     ];
 
     /**
@@ -41,4 +45,10 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function dogadjaji()
+    {
+        //zato sto korisnik moze da kreira vise dogadjaja
+        return $this->hasMany(Dogadjaj::class);
+    }
 }
