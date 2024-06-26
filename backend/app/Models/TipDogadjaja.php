@@ -13,7 +13,7 @@ class TipDogadjaja extends Model
         'opis'
     ];
 
-    public function reminders()
+    public function dogadjaji()
     {
         //zato sto jedan tip moze biti dodeljen vise dogadjaja
         //dakle jednom tipu dogadjaja pripada vise dogadjaja

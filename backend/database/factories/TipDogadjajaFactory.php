@@ -17,7 +17,8 @@ class TipDogadjajaFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'naziv' => $this->faker->randomElement(['Praznik','Trening','FakultetskeObaveze']),
+            'opis' => $this->faker->sentence,
         ];
     }
 }

@@ -31,7 +31,7 @@ class Dogadjaj extends Model
         return $this->belongsTo(TipDogadjaja::class);
     }
 
-    public function notifikacija()
+    public function notifikacije()
     {
         //zato sto dogadjaj moze da salje vise notifikacija
         return $this->hasMany(Notifikacija::class);

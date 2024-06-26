@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Dogadjaj;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,7 +18,9 @@ class NotifikacijaFactory extends Factory
     public function definition()
     {
         return [
-            //
+            'idDogadjaja' => Dogadjaj::inRandomOrder()->first()->id,
+            'poruka' => $this->faker->sentence,
+            'vremeSlanja' => $this->faker->dateTimeBetween('-1 day', 'now'),
         ];
     }
 }
