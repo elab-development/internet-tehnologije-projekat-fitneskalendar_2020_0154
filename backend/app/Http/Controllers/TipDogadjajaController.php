@@ -12,4 +12,43 @@ class TipDogadjajaController extends Controller
         $eventTypes = TipDogadjaja::all();
         return response()->json($eventTypes);
     }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'naziv' => 'required|string|max:255',
+            'opis' => 'nullable|string',
+        ]);
+
+        $eventType = TipDogadjaja::create([
+            'naziv' => $request->naziv,
+            'opis' => $request->opis,
+        ]);
+
+        return response()->json($eventType, 201);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $request->validate([
+            'naziv' => 'required|string|max:255',
+            'opis' => 'nullable|string',
+        ]);
+
+        $eventType = TipDogadjaja::findOrFail($id);
+        $eventType->update([
+            'naziv' => $request->naziv,
+            'opis' => $request->opis,
+        ]);
+
+        return response()->json($eventType);
+    }
+
+    public function destroy($id)
+    {
+        $eventType = TipDogadjaja::findOrFail($id);
+        $eventType->delete();
+
+        return response()->json(null, 204);
+    }
 }
