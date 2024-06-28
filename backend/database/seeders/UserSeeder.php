@@ -19,7 +19,7 @@ class UserSeeder extends Seeder
             'ime' => 'Andjela',
             'prezime' => 'Stankovic',
             'email' => 'as20200154@student.fon',
-            'lozinka' => bcrypt('as20200154'),
+            'password' => bcrypt('as20200154'),
             'uloga' => 'admin',
         ]);
         User::factory()->count(10)->create();

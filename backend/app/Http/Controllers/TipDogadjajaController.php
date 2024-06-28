@@ -15,6 +15,9 @@ class TipDogadjajaController extends Controller
 
     public function store(Request $request)
     {
+        if (!auth()->check()) {
+            abort(401, 'Unauthorized');
+        }
         $request->validate([
             'naziv' => 'required|string|max:255',
             'opis' => 'nullable|string',
