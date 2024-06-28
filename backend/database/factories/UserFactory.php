@@ -22,7 +22,7 @@ class UserFactory extends Factory
             'prezime' => $this->faker->lastName,
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
-            'uloga' =>  $this->faker->randomElement(['prijavljeniKorisnik','neprijavljeniKorisnik']),       
+            'uloga' =>  $this->faker->randomElement(['ulogovan','gost']),       
         ];
     }
 

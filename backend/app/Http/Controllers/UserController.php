@@ -19,7 +19,14 @@ class UserController extends Controller
         }      
        return UserResource::collection($users);
     }
+    public function show($id)
+    {
+        $user = User::findOrFail($id);
 
+        return response()->json([
+            'user' => $user,
+        ]);
+    }
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -38,7 +45,7 @@ class UserController extends Controller
             'prezime' => $request->prezime,
             'email' => $request->email,
             'password' => bcrypt($request->password),
-            'uloga' => 'prijavljeniKorisnik'
+            'uloga' => 'ulogovan'
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;

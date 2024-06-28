@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\TipDogadjajaResource;
 use App\Models\TipDogadjaja;
 use Illuminate\Http\Request;
 
@@ -10,14 +11,12 @@ class TipDogadjajaController extends Controller
     public function index()
     {
         $eventTypes = TipDogadjaja::all();
-        return response()->json($eventTypes);
+        return TipDogadjajaResource::collection($eventTypes);
     }
 
     public function store(Request $request)
     {
-        if (!auth()->check()) {
-            abort(401, 'Unauthorized');
-        }
+        
         $request->validate([
             'naziv' => 'required|string|max:255',
             'opis' => 'nullable|string',
@@ -28,7 +27,7 @@ class TipDogadjajaController extends Controller
             'opis' => $request->opis,
         ]);
 
-        return response()->json($eventType, 201);
+        return new TipDogadjajaResource($eventType);
     }
 
     public function update(Request $request, $id)
@@ -44,7 +43,7 @@ class TipDogadjajaController extends Controller
             'opis' => $request->opis,
         ]);
 
-        return response()->json($eventType);
+        return new TipDogadjajaResource($eventType);
     }
 
     public function destroy($id)
@@ -52,6 +51,6 @@ class TipDogadjajaController extends Controller
         $eventType = TipDogadjaja::findOrFail($id);
         $eventType->delete();
 
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Event type successfully deleted'], 200);
     }
 }
