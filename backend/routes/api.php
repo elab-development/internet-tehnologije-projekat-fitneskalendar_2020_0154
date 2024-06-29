@@ -1,11 +1,13 @@
 <?php
 
 use App\Http\Controllers\DogadjajController;
+use App\Http\Controllers\PrognozaController;
 use App\Http\Controllers\TipDogadjajaController;
 use App\Http\Controllers\UserController;
 use App\Http\Resources\TipDogadjajaResource;
 use App\Models\Dogadjaj;
 use App\Models\TipDogadjaja;
+use App\Http\Controllers\WeatherController;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -28,6 +30,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::get('/dogadjaji/javni', [DogadjajController::class, 'javni']);
+Route::get('/prognoza/{grad}', [PrognozaController::class, 'vratiVreme']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //rute za prijavljene korisnike
@@ -40,7 +43,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
     Route::put('/users', [UserController::class, 'updateSelf']);
     Route::delete('/users', [UserController::class, 'deleteSelf']);
-
     // rute za admina
     Route::middleware('uloga:admin')->group(function () {
         Route::get('/users', [UserController::class, 'index']);
