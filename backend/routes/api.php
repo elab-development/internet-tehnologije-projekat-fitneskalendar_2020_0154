@@ -21,32 +21,33 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 
-// Route::get('/tipoviDogadjaja', [TipDogadjajaController::class, 'index']);
-
-// Route::post('/tipoviDogadjaja', [TipDogadjajaController::class, 'store']);
-// Route::put('/tipoviDogadjaja/{id}', [TipDogadjajaController::class, 'update']);
-// Route::delete('/tipoviDogadjaja/{id}', [TipDogadjajaController::class, 'destroy']);
-//Route::resource('tipoviDogadjaja', TipDogadjajaController::class);
-//Route::resource('tipoviDogadjaja',TipDogadjajaController::class);
-//Route::resource('dogadjaji',DogadjajController::class);
-//Route::get('dogadjaji',[TipDogadjajaController::class,'index']);
-//Route::get('/dogadjaji', [DogadjajController::class, 'index']);
-//Route::get('/users', [UserController::class, 'index']);
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
-Route::get('/javni', [DogadjajController::class, 'javni']);
+Route::get('/dogadjaji/javni', [DogadjajController::class, 'javni']);
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
+Route::middleware('auth:sanctum')->group(function () {
+    //rute za prijavljene korisnike
     Route::get('/profile', function(Request $request) {
         return auth()->user();
     });
-   Route::resource('dogadjaji', DogadjajController::class);
+    
+    Route::resource('dogadjaji', DogadjajController::class);
     Route::resource('tipoviDogadjaja', TipDogadjajaController::class);
     Route::post('/logout', [UserController::class, 'logout']);
+    Route::put('/users', [UserController::class, 'updateSelf']);
+    Route::delete('/users', [UserController::class, 'deleteSelf']);
+
+    // rute za admina
+    Route::middleware('uloga:admin')->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::put('/users/{id}', [UserController::class, 'update']);
+        Route::delete('/users/{id}', [UserController::class, 'destroy']);
+    });
 });
+
 
 

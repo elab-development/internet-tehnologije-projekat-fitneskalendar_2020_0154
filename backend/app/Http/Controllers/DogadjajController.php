@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\DogadjajResource;
 use App\Models\Dogadjaj;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class DogadjajController extends Controller
 {
@@ -29,7 +30,14 @@ class DogadjajController extends Controller
     }
     public function javni()
     {
-        $publicEvents = Dogadjaj::where('privatnost', false)->get();
+        // $publicEvents = Dogadjaj::where('privatnost', false)->get();
+        // return DogadjajResource::collection($publicEvents);
+        $key = 'javni_dogadjaji';
+
+        $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
+            return Dogadjaj::where('privatnost', false)->get();
+        });
+    
         return DogadjajResource::collection($publicEvents);
     }
     public function show($id)
@@ -42,7 +50,7 @@ class DogadjajController extends Controller
     {
         $validated = $request->validate([
             'idTipaDogadjaja' => 'required|integer',
-            'idKorisnika' => 'required|integer',
+            //'idKorisnika' => 'required|integer',
             'naslov' => 'required|string|max:255',
             'datumVremeOd' => 'required|date',
             'datumVremeDo' => 'required|date|after:datumVremeOd',
@@ -50,7 +58,8 @@ class DogadjajController extends Controller
             'lokacija' => 'nullable|string|max:255',
             'privatnost' => 'required|boolean',
         ]);
-
+        $userId = auth()->id();
+        $validated['idKorisnika'] = $userId;
         $dogadjaj = Dogadjaj::create($validated);
         return new DogadjajResource($dogadjaj);
     }
