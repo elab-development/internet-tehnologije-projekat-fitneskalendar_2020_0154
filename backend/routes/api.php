@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::get('/dogadjaji/javni', [DogadjajController::class, 'javni']);
-Route::get('/prognoza/{grad}', [PrognozaController::class, 'vratiVreme']);
+Route::get('/prognoza/{lokacija}', [PrognozaController::class, 'vratiVreme']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //rute za prijavljene korisnike
