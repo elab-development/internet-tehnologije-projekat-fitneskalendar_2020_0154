@@ -23,7 +23,7 @@ class User extends Authenticatable
         'ime',
         'prezime',
         'email',
-        'lozinka',
+        'password',
         'uloga'
     ];
 

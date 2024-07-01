@@ -21,8 +21,8 @@ class UserFactory extends Factory
             'ime' => $this->faker->firstName,
             'prezime' => $this->faker->lastName,
             'email' => $this->faker->unique()->safeEmail,
-            'lozinka' => bcrypt('password'),
-            'uloga' =>  $this->faker->randomElement(['prijavljeniKorisnik','neprijavljeniKorisnik']),       
+            'password' => bcrypt('password'),
+            'uloga' =>  $this->faker->randomElement(['ulogovan','gost']),       
         ];
     }
 
