@@ -23,19 +23,23 @@ class DogadjajController extends Controller
         $dogadjaji = Dogadjaj::where(function ($query) use ($idKorisnika) {
                 $query->where('idKorisnika', $idKorisnika)
                       ->orWhere('privatnost', false); 
-            })
+            })->with('korisnik')->with('kategorija')
             ->get();
 
         return DogadjajResource::collection($dogadjaji);
     }
+    public function sviDogadjaji(){
+        $dogadjaji = Dogadjaj::with('korisnik', 'kategorija')->with('korisnik')->with('kategorija')->get();
+        return DogadjajResource::collection($dogadjaji);
+    }
     public function javni()
     {
-        // $publicEvents = Dogadjaj::where('privatnost', false)->get();
+        // $publicEvents = Dogadjaj::where('privatnost', false)->with('korisnik')->with('kategorija')->get();
         // return DogadjajResource::collection($publicEvents);
         $key = 'javni_dogadjaji';
 
         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
-            return Dogadjaj::where('privatnost', false)->get();
+            return Dogadjaj::where('privatnost', false)->with('korisnik')->with('kategorija')->get();
         });
     
         return DogadjajResource::collection($publicEvents);

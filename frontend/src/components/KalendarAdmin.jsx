@@ -1,91 +1,100 @@
+
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+// import 'react-big-calendar/lib/css/react-big-calendar.css';
 import './Kalendar.css'; 
 import moment from 'moment';
 import axios from 'axios';
 import Modal from 'react-modal';
-import { Link } from 'react-router-dom'; 
+import { useNavigate, Link} from 'react-router-dom'; 
 
 const localizer = momentLocalizer(moment);
 
-
 Modal.setAppElement('#root'); 
-const CalendarComponent = () => {
+
+const AdminCal = () => {
   const [events, setEvents] = useState([]);
+  const [token, setToken] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [weatherData, setWeatherData] = useState(null); 
 
+  let navigate=useNavigate();
+  
   useEffect(() => {
-    fetchPublicEvents();
+    fetchEvents();
   }, []);
 
-  const fetchPublicEvents = async () => {
+  const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/dogadjaji/javni');
-      console.log(response.data);
-      let eventData = response.data.data;
-
-      // Provera da li je eventData niz
+        const token = window.sessionStorage.getItem('authToken');
+        //vraca dogadjaje koji su javni i koje je kreirao korisnik
+        const response = await axios.get('http://127.0.0.1:8000/api/sviDogadjaji', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        let eventData = response.data.data;
       if (!Array.isArray(eventData)) {
         throw new Error('Response data is not an array');
       }
-
+      //eventData = eventData.filter(event => event.privatnost);
       const transformedEvents = eventData.map(event => ({
         title: event.naslov,
         start: moment(event.datumVremeOd).toDate(),
         end: moment(event.datumVremeDo).toDate(),
         description: event.opis,
         location: event.lokacija,
+        privatnost:event.privatnost,
+        email:event.korisnik.email
       }));
+      console.log("Transformed Events:", transformedEvents);
       setEvents(transformedEvents);
     } catch (error) {
-      console.error('Error fetching public events:', error);
+      console.error('Error fetching events:', error);
+    }
+  };
+  //bavi se izabranim dogadjajem
+  const handleSelectEvent = async (event) => {
+    setSelectedEvent(event);
+  };
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://127.0.0.1:8000/api/logout', null, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem('authToken')}`,
+        },
+      });
+      navigate('/login')
+      setToken(null)
+      sessionStorage.removeItem('authToken');
+    } catch (error) {
+      console.error('Error:', error);
     }
   };
 
-  const handleSelectEvent = async (event) => {
-    setSelectedEvent(event);
-  
-    // try {
-    //   const start = moment(event.start);
-    //   const end = moment(event.end);
-    //   const days = end.diff(start, 'days') + 1;
-  
-    //   let weatherData = [];
-    //   for (let i = 0; i < days; i++) {
-    //     const currentDate = start.clone().add(i, 'days');
-    //     const date = currentDate.format('YYYY-MM-DD');
-    //     const response = await axios.get(`http://127.0.0.1:8000/api/prognoza/${event.location}/${date}`);
-    //     weatherData.push(response.data);
-    //   }
-  
-    //   setWeatherData(weatherData);
-    // } catch (error) {
-    //   console.error('Error fetching weather data:', error);
-    // }
-  };
+  const ColoredDateCellWrapper = ({ children }) =>
+    React.cloneElement(React.Children.only(children), {
+      style: {
+        backgroundColor: 'lightblue',
+      }  })
 
+  //zatvara detalje o dogadjaju
   const closeModal = () => {
     setSelectedEvent(null);
     setWeatherData(null);
   };
 
-  const Event = ({ event }) => (
-    <span className="custom-event">{event.title}</span>
-  );
-
-  const DayWrapper = ({ children }) => (
-    <div className="custom-day">
-      {children}
-    </div>
-  );
-
+  //postavlja crvenu boju za privatne dogadjaje
+  const eventPropGetter = (event) => {
+    let backgroundColor = event.privatnost ? 'red' : '#3182ce';  
+    return {
+      style: { backgroundColor }
+    };
+  };
   return (
     <div style={{ height: '600px' }}>
-      <div className="calendar-header">
-        <Link to="/login" className="auth-link">Prijavi se</Link>
-        <Link to="/register" className="auth-link">Registruj se</Link>
+     < div className="calendar-header">
+         <Link onClick={handleLogout}>Logout</Link>
       </div>
       <Calendar
         localizer={localizer}
@@ -95,13 +104,13 @@ const CalendarComponent = () => {
         endAccessor="end"
         style={{ margin: '50px' }}
         components={{
-          event: Event,
-          dateCellWrapper: DayWrapper,
+            timeSlotWrapper: ColoredDateCellWrapper
         }}
         onSelectEvent={handleSelectEvent}
-        toolbar
+        eventPropGetter={eventPropGetter}
       />
       <Modal
+      //ovim se otvaraju detalji o dogadjaju
         isOpen={!!selectedEvent}
         onRequestClose={closeModal}
         className="react-modal-content"
@@ -116,7 +125,7 @@ const CalendarComponent = () => {
             <p><strong>Kraj:</strong> {moment(selectedEvent.end).format('LLLL')}</p>
             <p><strong>Opis:</strong> {selectedEvent.description}</p>
             <p><strong>Lokacija:</strong> {selectedEvent.location}</p>
-            {/* Weather data display */}
+            <p><strong>Email korisnika koji je kreirao dogadjaj:</strong> {selectedEvent.email}</p>
           </div>
         )}
       </Modal>
@@ -124,9 +133,5 @@ const CalendarComponent = () => {
   );
 };
 
-export default CalendarComponent;
+export default AdminCal;
 
-
-
-
- 
