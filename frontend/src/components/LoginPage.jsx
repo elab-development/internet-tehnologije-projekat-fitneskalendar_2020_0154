@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
  import axios from 'axios';
+ import { useNavigate } from 'react-router-dom';
  import './LoginPage.css';
 
 
@@ -8,7 +9,7 @@ const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -17,6 +18,7 @@ const LoginPage = () => {
       const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password }, { withCredentials: true });
       console.log('Login successful', response.data);
       window.sessionStorage.setItem("authToken",response.data.token);
+      navigate('/dogadjaji');
     } catch (error) {
       setError('Invalid email or password');
       console.error('There was an error logging in!', error);

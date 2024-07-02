@@ -1,9 +1,9 @@
 
   .login-page {
-    background-image: url('../slike/loginslika.jpg'); /* Promenite putanju do vaše slike */
+    background-image: url('../slike/loginslika.jpg'); 
     background-size: cover;
     background-position: center;
-    height: 100vh; /* Visina ekranu */
+    height: 100vh; 
     display: flex;
     justify-content: center;
     align-items: center;

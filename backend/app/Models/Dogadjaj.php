@@ -22,13 +22,13 @@ class Dogadjaj extends Model
     public function korisnik()
     {
         //jer korisnik pravi dogadjaj, dakle dogadjaj pripada korisniku
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class,'idKorisnika');
     }
 
     public function kategorija()
     {
         //jer dogadjaj ima svoj tip, dakle pripada tipu
-        return $this->belongsTo(TipDogadjaja::class);
+        return $this->belongsTo(TipDogadjaja::class,'idTipaDogadjaja');
     }
 
     public function notifikacije()

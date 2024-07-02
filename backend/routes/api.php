@@ -9,7 +9,7 @@ use App\Http\Resources\TipDogadjajaResource;
 use App\Models\Dogadjaj;
 use App\Models\TipDogadjaja;
 use App\Http\Controllers\WeatherController;
-
+use App\Http\Resources\DogadjajResource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -46,6 +46,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/users', [UserController::class, 'deleteSelf']);
     // rute za admina
     Route::middleware('uloga:admin')->group(function () {
+        Route::get('/sviDogadjaji',[DogadjajController::class,'sviDogadjaji']);
         Route::get('/users', [UserController::class, 'index']);
         Route::put('/users/{id}', [UserController::class, 'update']);
         Route::delete('/users/{id}', [UserController::class, 'destroy']);

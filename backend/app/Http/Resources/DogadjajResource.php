@@ -18,8 +18,8 @@ class DogadjajResource extends JsonResource
     {
         return[
             'id' =>$this->id,
-            'korisnik' => $this->idKorisnika,
-            'tipDogadjaj' =>$this->idTipaDogadjaja,
+            'korisnik' => new UserResource($this->whenLoaded('korisnik')),
+            'tipDogadjaj' =>new TipDogadjajaResource($this->whenLoaded('kategorija')),
             'naslov' => $this->naslov,
             'datumVremeOd' => $this->datumVremeOd,
             'datumVremeDo' => $this->datumVremeDo,
