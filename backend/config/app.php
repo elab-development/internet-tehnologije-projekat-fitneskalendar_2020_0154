@@ -185,6 +185,7 @@ return [
         /*
          * Package Service Providers...
          */
+        Fruitcake\Cors\CorsServiceProvider::class,
 
         /*
          * Application Service Providers...
@@ -212,4 +213,33 @@ return [
         // 'ExampleClass' => App\Example\ExampleClass::class,
     ])->toArray(),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Middleware
+    |--------------------------------------------------------------------------
+    |
+    | These middleware are run during every request to your application.
+    |
+    */
+
+    'middleware' => [
+        // Ostali globalni middleware...
+        \Fruitcake\Cors\HandleCors::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Route Middleware
+    |--------------------------------------------------------------------------
+    |
+    | These middleware may be assigned to groups or used individually.
+    |
+    */
+
+    'routeMiddleware' => [
+        // Ostali route middleware...
+        'cors' => \Fruitcake\Cors\HandleCors::class,
+    ],
+
 ];
+
