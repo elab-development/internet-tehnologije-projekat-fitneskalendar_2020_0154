@@ -3,22 +3,19 @@ import './App.css';
 import { BrowserRouter as Router,Route, Routes, BrowserRouter } from 'react-router-dom'; 
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
-import CalendarComponent from './components/Kalendar';
-import AdminCal from './components/KalendarAdmin';
+import CombinedCalendar from './components/Kal';
+
+
 function App() {
   return (
     <BrowserRouter>
+     {/* <AutoLogout /> */}
     <div className="App">
       <Routes>
-        <Route path="/" element={<CalendarComponent />} />
+        <Route path="/" element={<CombinedCalendar />} />
         <Route path="/login" element={<LoginPage />} />
-
-        <Route path="/dogadjaji" element={<AdminCal />} />
-
         <Route path="/register" element={<RegisterPage />} />
-
-
-        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/kalendar" element={<CombinedCalendar />} />
 
       </Routes>
     </div>

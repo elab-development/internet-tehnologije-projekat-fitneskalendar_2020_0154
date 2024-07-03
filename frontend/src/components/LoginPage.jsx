@@ -5,7 +5,7 @@ import React, { useState } from 'react';
  import { useNavigate } from 'react-router-dom';
 
  import { Link } from 'react-router-dom'; 
- import './loginPage.css';
+ import './LoginPage.css';
 
 
 
@@ -14,6 +14,7 @@ const LoginPage = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,8 +22,10 @@ const LoginPage = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password }, { withCredentials: true });
       console.log('Login successful', response.data);
-      window.sessionStorage.setItem("authToken",response.data.token);
-      navigate('/dogadjaji');
+      window.localStorage.setItem("authToken",response.data.token);
+      const expirationTime = new Date().getTime() + (response.data.expiration * 1000); // Pretvara expiresIn iz sekundi u milisekunde
+      window.localStorage.setItem("authTokenExpiration", expirationTime);
+      navigate('/kalendar');
     } catch (error) {
       setError('Netačna email adresa ili lozinka');
       console.error('There was an error logging in!', error);

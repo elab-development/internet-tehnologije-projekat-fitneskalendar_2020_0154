@@ -24,9 +24,9 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-//     return $request->user();
-// });
+Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+    return $request->user();
+});
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
@@ -38,7 +38,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', function(Request $request) {
         return auth()->user();
     });
-    
     Route::resource('dogadjaji', DogadjajController::class);
     Route::resource('tipoviDogadjaja', TipDogadjajaController::class);
     Route::post('/logout', [UserController::class, 'logout']);

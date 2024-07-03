@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\DogadjajResource;
 use App\Models\Dogadjaj;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -28,7 +29,32 @@ class DogadjajController extends Controller
 
         return DogadjajResource::collection($dogadjaji);
     }
-    public function sviDogadjaji(){
+    // public function index()
+    // {
+    //     $idKorisnika = auth()->id();
+    //     $user = User::findOrFail($idKorisnika);
+    //     $user = User::findOrFail($idKorisnika);
+    //     $key = 'javni_dogadjaji';
+
+    //     if ($user->uloga === 'admin') {
+    //         // Admin može da vidi sve javne događaje (i email korisnika koji ga je napravio) i svoje događaje
+    //         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
+    //             return Dogadjaj::where('privatnost', false)->with('korisnik:id,email')->with('kategorija')->get();
+    //         });
+    //         $userEvents = Dogadjaj::where('idKorisnika', $user->id)->with('kategorija')->get();
+    //     } else {
+    //         // Obični prijavljeni korisnici mogu da vide svoje događaje i javne događaje (bez emaila drugih korisnika)
+    //         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
+    //             return Dogadjaj::where('privatnost', false)->with('kategorija')->get();
+    //         });
+    //         $userEvents = Dogadjaj::where('idKorisnika', $user->id)->with('kategorija')->get();
+    //     }
+    //     $combinedEvents = $publicEvents->concat($userEvents);
+    //     return DogadjajResource::collection($combinedEvents);
+    // }
+
+    public function sviDogadjaji()
+    {
         $dogadjaji = Dogadjaj::with('korisnik', 'kategorija')->with('korisnik')->with('kategorija')->get();
         return DogadjajResource::collection($dogadjaji);
     }
@@ -41,7 +67,7 @@ class DogadjajController extends Controller
         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
             return Dogadjaj::where('privatnost', false)->with('korisnik')->with('kategorija')->get();
         });
-    
+
         return DogadjajResource::collection($publicEvents);
     }
     public function show($id)
@@ -97,5 +123,3 @@ class DogadjajController extends Controller
         return response()->json(['message' => 'Event successfully deleted'], 200);
     }
 }
-
-

@@ -49,6 +49,7 @@ class UserController extends Controller
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;
+        $request->session()->put('authToken', $token);
 
         return response()->json(['user' => new UserResource($user), 'token' => $token,'token_type'=>'Bearer']);
     }
@@ -65,11 +66,12 @@ class UserController extends Controller
       //  dd($user);
         $token = $user->createToken('authToken')->plainTextToken;
     
-        return response()->json(['user' => new UserResource($user), 'token' => $token]);
+        return response()->json(['user' => new UserResource($user), 'token' => $token, 'uloga' => $user->uloga]);
     }
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
+        $request->session()->forget('authToken');
         return response()->json(['message' => 'Successfully logged out']);
     }
 
