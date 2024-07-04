@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './RegisterPage.css';
+import Navbar from './Navbar';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -25,7 +26,6 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Provera da li se password i password_confirmation podudaraju
     if (formData.password !== formData.password_confirmation) {
       setErrorMessage('Lozinke se ne podudaraju.');
       return;
@@ -45,7 +45,6 @@ const RegisterPage = () => {
       });
     } catch (error) {
       if (error.response && error.response.data && typeof error.response.data === 'object') {
-        // Ako postoji odgovor sa greškom od servera i ako je to objekat, prikazujemo poruke grešaka
         const { errors } = error.response.data;
         if (errors && typeof errors === 'object') {
           const errorMessage = Object.values(errors).flat().join(' ');
@@ -54,7 +53,6 @@ const RegisterPage = () => {
           setErrorMessage('Došlo je do greške prilikom registracije.');
         }
       } else {
-        // Ako ne postoji odgovor sa greškom, prikažemo generičku poruku
         setErrorMessage('Došlo je do greške prilikom registracije.');
       }
       setSuccessMessage('');
@@ -64,6 +62,7 @@ const RegisterPage = () => {
 
   return (
     <div className="register-page">
+      <Navbar role="guest" />
       <div className="register-form">
         <h1>Registracija</h1>
         <form onSubmit={handleSubmit}>

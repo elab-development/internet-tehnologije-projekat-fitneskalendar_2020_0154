@@ -4,6 +4,7 @@ import { BrowserRouter as Router,Route, Routes, BrowserRouter } from 'react-rout
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import CombinedCalendar from './components/Kal';
+import Navbar from './components/Navbar';
 
 
 function App() {

@@ -1,49 +1,108 @@
 .react-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75); 
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000; 
-  }
-  
-  .react-modal-content {
-    position: relative;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 90%;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    z-index: 1001; 
-  }
-  
-  .close-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    border: none;
-    background: transparent;
-    font-size: 1.5rem;
-    cursor: pointer;
-  }
-  .calendar-header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 10px;
-  }
-  
-  .auth-link {
-    margin-left: 10px;
-    color: #007bff;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75); 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000; 
+}
+
+.react-modal-content {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1001; 
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  background-color: #f8d7da;
+
+}
+
+.calendar-header a{
+color: #dc3545;
+    padding: 14px 20px;
     text-decoration: none;
-  }
-  
-  .auth-link:hover {
-    text-decoration: underline;
-  }
-  
+    display: inline-block;
+    font-weight: bold;
+}
+
+.calendar-header a:hover {
+  background-color: #dc3545;
+  color:#f8d7da;
+  text-decoration: none;
+  border-radius:20px;
+}
+
+.auth-link {
+  margin-left: 10px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.calendar-container {
+  flex: 1;
+  margin: 50px 10px; /* Dodao margine sa strane */
+}
+
+.rbc-calendar {
+  max-width: 100%;
+}
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between; /* Razdvaja dugmad na levo i desno */
+  flex-wrap: nowrap; /* Sprečava wrap */
+  gap: 10px; /* Prostor između grupa dugmića */
+
+}
+
+.rbc-btn-group {
+  display: flex;
+  flex-wrap: nowrap; /* Sprečava wrap dugmića */
+  gap: 5px; /* Prostor između dugmića */
+}
+
+.rbc-btn-group .rbc-btn {
+  padding: 5px 8px; /* Smanjuje unutrašnju marginu dugmića */
+  flex: 1 1 auto; /* Fleksibilna širina dugmića */
+  max-width: 80px; /* Maksimalna širina dugmića */
+  white-space: nowrap; /* Sprečava prelazak teksta u novi red */
+  font-size: 12px; /* Smanjuje veličinu fonta */
+}
+.rbc-toolbar-label{
+color: #dc3545;
+font-weight: bold;
+font-size:larger;
+
+}

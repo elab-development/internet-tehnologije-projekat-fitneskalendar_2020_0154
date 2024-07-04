@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+import Navbar from './Navbar';
 import './Kalendar.css';
 import moment from 'moment';
 import axios from 'axios';
 import Modal from 'react-modal';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate , Link} from 'react-router-dom';
 
 const localizer = momentLocalizer(moment);
 
@@ -140,7 +141,7 @@ const CombinedCalendar = () => {
     <div style={{ height: '600px' }}>
       <div className="calendar-header">
         {token ? (
-          <Link onClick={handleLogout}>Logout</Link>
+          <Link onClick={handleLogout}>Odjavi se</Link>
         ) : (
           <>
             <Link to="/login" className="auth-link">Prijavi se</Link>
@@ -167,7 +168,7 @@ const CombinedCalendar = () => {
       >
         {selectedEvent && renderModalContent()}
       </Modal>
-    </div>
+      </div>
   );
 };
 
