@@ -49,9 +49,8 @@ class UserController extends Controller
         ]);
 
         $token = $user->createToken('authToken')->plainTextToken;
-        $request->session()->put('authToken', $token);
-
-        return response()->json(['user' => new UserResource($user), 'token' => $token,'token_type'=>'Bearer']);
+        $tokenExpiration = config('sanctum.expiration');
+        return response()->json(['user' => new UserResource($user), 'token' => $token, 'uloga' => $user->uloga,'istice'=>$tokenExpiration]);
     }
 
     public function login(Request $request)
@@ -65,8 +64,8 @@ class UserController extends Controller
     
       //  dd($user);
         $token = $user->createToken('authToken')->plainTextToken;
-    
-        return response()->json(['user' => new UserResource($user), 'token' => $token, 'uloga' => $user->uloga]);
+        $tokenExpiration = config('sanctum.expiration');
+        return response()->json(['user' => new UserResource($user), 'token' => $token, 'uloga' => $user->uloga,'istice'=>$tokenExpiration]);
     }
     public function logout(Request $request)
     {

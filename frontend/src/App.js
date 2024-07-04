@@ -1,5 +1,6 @@
-import React from 'react';
+
 import './App.css';
+import React from 'react';
 import { BrowserRouter as Router,Route, Routes, BrowserRouter } from 'react-router-dom'; 
 import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
@@ -8,9 +9,10 @@ import Navbar from './components/Navbar';
 
 
 function App() {
+  
+
   return (
     <BrowserRouter>
-     {/* <AutoLogout /> */}
     <div className="App">
       <Routes>
         <Route path="/" element={<CombinedCalendar />} />
