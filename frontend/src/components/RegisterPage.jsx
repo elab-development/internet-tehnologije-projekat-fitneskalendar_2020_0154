@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './RegisterPage.css';
+import{ useNavigate}  from 'react-router-dom';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -13,6 +14,8 @@ const RegisterPage = () => {
 
   const [successMessage, setSuccessMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
+  let timeoutId = null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,6 +38,20 @@ const RegisterPage = () => {
       const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
       console.log('Registration successful', response.data);
       setSuccessMessage('Uspešno ste se registrovali!');
+      window.localStorage.setItem("authToken",response.data.token);
+      console.log(response.data.istice); 
+      const expirationTime = response.data.istice * 60 * 1000; 
+      const alertTime = expirationTime - 30000; 
+      clearTimeout(timeoutId);
+
+      timeoutId = setTimeout(() => {
+        alert('Vaša sesija je istekla. Volim Vas prijavite se ponovo.');
+        handleLogout();
+    }, alertTime);
+      
+      console.log('Token expiration time:', new Date(Date.now() + expirationTime).toLocaleString());
+      navigate('/kalendar');
+
       setErrorMessage('');
       setFormData({
         ime: '',
@@ -61,6 +78,10 @@ const RegisterPage = () => {
       console.error('There was an error registering!', error);
     }
   };
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    navigate('/login'); 
+};
 
   return (
     <div className="register-page">

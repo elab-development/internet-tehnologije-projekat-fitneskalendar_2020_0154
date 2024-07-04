@@ -18,6 +18,7 @@ const CombinedCalendar = () => {
   const [isAdmin, setIsAdmin] = useState(false); 
   const navigate = useNavigate();
 
+
   useEffect(() => {
     const authToken = window.localStorage.getItem('authToken');
     setToken(authToken);
@@ -37,7 +38,7 @@ const CombinedCalendar = () => {
     }).then(response => {
 
       setIsAdmin(response.data.uloga === 'admin');
-      console.log("isAdmin:", isAdmin);
+      //console.log("isAdmin:", isAdmin);
     }).catch(error => {
       console.error('Error checking admin status:', error);
     });
@@ -65,7 +66,7 @@ const CombinedCalendar = () => {
         korisnik:event.korisnik,
         email:event.korisnik.email
       }));
-      console.log(transformedEvents);
+     // console.log(transformedEvents);
       setEvents(transformedEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -103,9 +104,10 @@ const CombinedCalendar = () => {
           Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
-      navigate('/kalendar');
       setToken(null);
       localStorage.removeItem('authToken');
+      fetchPublicEvents();
+      navigate('/kalendar');
     } catch (error) {
       console.error('Error:', error);
     }
