@@ -1,9 +1,12 @@
- .navbar {
-    background-color: #f8d7da;
-    overflow: hidden;
-    padding: 10px;
-  }
-  
+.navbar {
+  background-color: #f8d7da;
+  overflow: hidden;
+  padding: 10px;
+  position: sticky; 
+  top: 0; 
+  z-index: 1000; 
+}
+
   .navbar a {
     color: #dc3545;
     padding: 14px 20px;

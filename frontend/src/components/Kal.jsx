@@ -7,7 +7,6 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import { useNavigate , Link} from 'react-router-dom';
 import EventForm from './EventForm';
-// import WeatherForecast from './Prognoza';
 
 const localizer = momentLocalizer(moment);
 

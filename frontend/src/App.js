@@ -6,7 +6,7 @@ import LoginPage from './components/LoginPage';
 import RegisterPage from './components/RegisterPage';
 import CombinedCalendar from './components/Kal';
 import Navbar from './components/Navbar';
-// import WeatherForecast from './components/Prognoza';
+import WeatherForecast from './components/Prognoza';
 
 
 function App() {
@@ -26,7 +26,7 @@ function App() {
         <Route path="/login" element={<LoginPage handleRoleChange={handleRoleChange} />} />
         <Route path="/register" element={<RegisterPage  handleRoleChange={handleRoleChange} />} />
         <Route path="/kalendar" element={<CombinedCalendar handleRoleChange={handleRoleChange}  />} />
-        {/* <Route path="/weather" element={<WeatherForecast />} /> */}
+        <Route path="/weather" element={<WeatherForecast />} />
         Navbar
       </Routes>
     </div>

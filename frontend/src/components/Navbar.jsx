@@ -33,7 +33,7 @@ const Navbar = ({ role,handleRoleChange }) => {
     <div className="navbar">
       <div className="left-links">
         <Link to="/" onClick={handleNavigateHome}>Kalendar</Link>
-        {/* <Link to="/weather">Vremenska Prognoza</Link> */}
+        <Link to="/weather">Vremenska Prognoza</Link>
       </div>
       <div className="right-links">
         {role === 'guest' && (
