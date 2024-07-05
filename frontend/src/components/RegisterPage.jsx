@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './RegisterPage.css';
-import Navbar from './Navbar';
 import{ useNavigate}  from 'react-router-dom';
 
 
-const RegisterPage = () => {
+const RegisterPage = ({ handleRoleChange }) => {
   const [formData, setFormData] = useState({
     ime: '',
     prezime: '',
@@ -39,20 +38,19 @@ const RegisterPage = () => {
       const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
       console.log('Registration successful', response.data);
       setSuccessMessage('Uspešno ste se registrovali!');
-     // window.localStorage.setItem("authToken",response.data.token);
-      console.log(response.data.istice); 
-      const expirationTime = response.data.istice * 60 * 1000; 
-      const alertTime = expirationTime - 30000; 
+      window.localStorage.setItem("authToken",response.data.token);
+      const expirationTime = response.data.istice * 60 * 1000; //broj minuta koliko traje token
+      const tokenIsticeU=new Date(Date.now() + expirationTime).toLocaleString() //u kom tacno trenutku istice token
+      window.localStorage.setItem("expiration",tokenIsticeU);
       clearTimeout(timeoutId);
 
       timeoutId = setTimeout(() => {
         alert('Vaša sesija je istekla. Volim Vas prijavite se ponovo.');
         handleLogout();
-    }, alertTime);
+    }, expirationTime);
       
-     // console.log('Token expiration time:', new Date(Date.now() + expirationTime).toLocaleString());
       navigate('/kalendar');
-
+      handleRoleChange(response.data.uloga);
       setErrorMessage('');
       setFormData({
         ime: '',
@@ -78,13 +76,14 @@ const RegisterPage = () => {
     }
   };
   const handleLogout = () => {
- //   localStorage.removeItem('authToken');
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiration');
+    handleRoleChange('guest');
     navigate('/login'); 
 };
 
   return (
     <div className="register-page">
-      <Navbar role="guest" />
       <div className="register-form">
         <h1>Registracija</h1>
         <form onSubmit={handleSubmit}>

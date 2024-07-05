@@ -1,18 +1,39 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
-
-const Navbar = ({ role, handleLogout }) => {
+import axios from 'axios';
+const Navbar = ({ role,handleRoleChange }) => {
   const navigate = useNavigate();
 
   const handleNavigateHome = () => {
     navigate('/');
   };
-
+  const handleLogout = async () => {
+    try {
+      await axios.post('http://127.0.0.1:8000/api/logout', null, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+        },
+      });
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('expiration');
+      handleRoleChange('guest');
+      navigate('/kalendar');
+      window.location.reload();
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  };
+  const handleLogoutAndChangeRole = () => {
+    handleLogout(); 
+    handleRoleChange(); 
+    navigate('/kalendar');
+  };
   return (
     <div className="navbar">
       <div className="left-links">
         <Link to="/" onClick={handleNavigateHome}>Kalendar</Link>
+        {/* <Link to="/weather">Vremenska Prognoza</Link> */}
       </div>
       <div className="right-links">
         {role === 'guest' && (
@@ -24,11 +45,12 @@ const Navbar = ({ role, handleLogout }) => {
         {role === 'admin' && (
           <>
             <Link to="/korisnici">Korisnici</Link>
-            <Link to="/" onClick={handleLogout}>Odjavi se</Link>
+            <Link to="/" onClick={handleLogoutAndChangeRole}>Odjavi se</Link>
           </>
         )}
-        {role === 'user' && (
-          <Link to="/" onClick={handleLogout}>Odjavi se</Link>
+        {role === 'ulogovan' && (
+          
+          <Link to="/" onClick={handleLogoutAndChangeRole}>Odjavi se</Link>
         )}
       </div>
     </div>

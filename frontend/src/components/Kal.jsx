@@ -1,24 +1,27 @@
 import React, { useEffect, useState } from 'react';
 import { Calendar, momentLocalizer } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import Navbar from './Navbar';
 import './Kalendar.css';
 import moment from 'moment';
 import axios from 'axios';
 import Modal from 'react-modal';
 import { useNavigate , Link} from 'react-router-dom';
+import EventForm from './EventForm';
+// import WeatherForecast from './Prognoza';
 
 const localizer = momentLocalizer(moment);
 
 Modal.setAppElement('#root');
 
-const CombinedCalendar = () => {
+const CombinedCalendar = ({ handleRoleChange }) => {
   const [events, setEvents] = useState([]);
   const [token, setToken] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false); 
+  const [showForm, setShowForm] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState(null);
   const navigate = useNavigate();
-
+  const [role, setRole] = useState('guest');
 
   useEffect(() => {
     const authToken = window.localStorage.getItem('authToken');
@@ -31,6 +34,31 @@ const CombinedCalendar = () => {
     }
   }, []);
 
+  useEffect(() => {
+    const authToken = window.localStorage.getItem('authToken');
+    if (authToken) {
+      checkTokenExpiration(authToken);
+    } 
+  });
+  
+  const checkTokenExpiration = (token) => {
+    const tokenExpiration = localStorage.getItem('expiration');
+  
+    if (token && tokenExpiration) {
+        const expirationTime = new Date(tokenExpiration).getTime();
+        const currentTime = new Date().getTime();
+        if (currentTime > expirationTime) {
+            alert('Vaša sesija je istekla. Molimo prijavite se ponovo!');
+            handleLogoutSesija();
+        }
+    }
+  };
+  const handleLogoutSesija = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiration');
+    handleRoleChange('guest');
+    navigate('/login'); 
+};
   const checkAdminStatus = (authToken) => {
     axios.get('http://127.0.0.1:8000/api/user', {
       headers: {
@@ -40,6 +68,7 @@ const CombinedCalendar = () => {
 
       setIsAdmin(response.data.uloga === 'admin');
       //console.log("isAdmin:", isAdmin);
+      setRole(response.data.uloga); 
     }).catch(error => {
       console.error('Error checking admin status:', error);
     });
@@ -98,21 +127,20 @@ const CombinedCalendar = () => {
     setSelectedEvent(event);
   };
 
-  const handleLogout = async () => {
-    try {
-      await axios.post('http://127.0.0.1:8000/api/logout', null, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
-      setToken(null);
-      localStorage.removeItem('authToken');
-      fetchPublicEvents();
-      navigate('/kalendar');
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
+  const handleSelectSlot = (slotInfo) => {
+    setSelectedSlot(slotInfo); 
+    setShowForm(true); 
+};
+const handleSubmitForm = (eventData) => {
+  const authToken = window.localStorage.getItem('authToken');
+  fetchEvents(authToken);
+  console.log('Event Data:', eventData);
+  setShowForm(false); 
+};
+const handleCloseForm = () => {
+  setShowForm(false); 
+};
+
 
   const closeModal = () => {
     setSelectedEvent(null);
@@ -126,7 +154,7 @@ const CombinedCalendar = () => {
   };
 
   const renderModalContent = () => (
-    <div>
+    <div className="react-modal-content">
       <button className="close-button" onClick={closeModal}>&times;</button>
       <h2>{selectedEvent.title}</h2>
       <p><strong>Početak:</strong> {moment(selectedEvent.start).format('LLLL')}</p>
@@ -141,16 +169,6 @@ const CombinedCalendar = () => {
 
   return (
     <div style={{ height: '600px' }}>
-      <div className="calendar-header">
-        {token ? (
-          <Link onClick={handleLogout}>Odjavi se</Link>
-        ) : (
-          <>
-            <Link to="/login" className="auth-link">Prijavi se</Link>
-            <Link to="/register" className="auth-link">Registruj se</Link>
-          </>
-        )}
-      </div>
       <Calendar
         localizer={localizer}
         events={events}
@@ -159,7 +177,11 @@ const CombinedCalendar = () => {
         endAccessor="end"
         style={{ margin: '50px' }}
         onSelectEvent={handleSelectEvent}
+        onSelectSlot={handleSelectSlot}
         eventPropGetter={token ? eventPropGetter : undefined}
+        showAllEvents={true}
+        selectable={true}
+
       />
       <Modal
         isOpen={!!selectedEvent}
@@ -170,6 +192,12 @@ const CombinedCalendar = () => {
       >
         {selectedEvent && renderModalContent()}
       </Modal>
+      {showForm && (
+            <div className="event-form">
+                <EventForm onSubmit={handleSubmitForm} selectedSlot={selectedSlot}/>
+                <button onClick={handleCloseForm}>Cancel</button>
+            </div>
+        )}
       </div>
   );
 };

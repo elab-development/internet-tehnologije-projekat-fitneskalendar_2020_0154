@@ -2,17 +2,14 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import Navbar from './Navbar'; 
-import './loginPage.css';
+import './LoginPage.css';
 
-const LoginPage = () => {
+const LoginPage = ({ handleRoleChange }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
-
-  const role = 'guest'; // Postavi ulogu na 'guest' za stranicu za prijavu
-
+  let timeoutId = null;
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -21,13 +18,21 @@ const LoginPage = () => {
       const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password }, { withCredentials: true });
       console.log('Login successful', response.data);
       window.localStorage.setItem("authToken",response.data.token);
-      const expirationTime = new Date().getTime() + (response.data.expiration * 1000); // Pretvara expiresIn iz sekundi u milisekunde
-      window.localStorage.setItem("authTokenExpiration", expirationTime);
-      navigate('/kalendar');
+    
+     const expirationTime = response.data.istice * 60 * 1000; //broj minuta koliko traje token
+      const tokenIsticeU=new Date(Date.now() + expirationTime).toLocaleString() //u kom tacno trenutku istice token
+      window.localStorage.setItem("expiration",tokenIsticeU);
+      clearTimeout(timeoutId);
 
-      // const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password });
-      // window.sessionStorage.setItem("authToken", response.data.token);
-      // navigate('/dogadjaji');
+      timeoutId = setTimeout(() => {
+        alert('Vaša sesija je istekla. Molimo prijavite se ponovo.');
+        handleLogout();
+    }, expirationTime);//za koliko minuta treba da javi 
+    navigate('/kalendar');
+    //treba nam uloga zbog prikaza Navbara
+    handleRoleChange(response.data.uloga);
+    return () => clearTimeout(timeoutId);
+     
 
     } catch (error) {
       setError('Netačna email adresa ili lozinka');
@@ -35,9 +40,16 @@ const LoginPage = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiration');
+    handleRoleChange('guest');
+    navigate('/login'); 
+};
+
+
   return (
     <div className="login-page">
-      <Navbar role={role} /> {/* Uključi Navbar */}
       <div className="login-container">
         <h1>Prijava</h1>
         <form onSubmit={handleSubmit}>
