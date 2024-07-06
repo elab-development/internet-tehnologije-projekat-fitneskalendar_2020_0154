@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DogadjajController;
+use App\Http\Controllers\NotifikacijaController;
 use App\Http\Controllers\PrognozaController;
 use App\Http\Controllers\TipDogadjajaController;
 
@@ -32,6 +33,7 @@ Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login'])->name('login');
 Route::get('/dogadjaji/javni', [DogadjajController::class, 'javni']);
 Route::get('/prognoza/{lokacija}', [PrognozaController::class, 'vratiVreme']);
+Route::get('/notifikacije', [NotifikacijaController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //rute za prijavljene korisnike
