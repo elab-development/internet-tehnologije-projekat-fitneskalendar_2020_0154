@@ -16,8 +16,12 @@ class TipDogadjajaFactory extends Factory
      */
     public function definition()
     {
+        // return [
+        //     'naziv' => $this->faker->randomElement(['Praznik','Trening','FakultetskeObaveze']),
+        //     'opis' => $this->faker->sentence,
+        // ];
         return [
-            'naziv' => $this->faker->randomElement(['Praznik','Trening','FakultetskeObaveze']),
+            'naziv' => $this->faker->word,
             'opis' => $this->faker->sentence,
         ];
     }

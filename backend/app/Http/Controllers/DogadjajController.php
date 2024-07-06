@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Resources\DogadjajResource;
+use App\Mail\NotifikacijaMail;
 use App\Models\Dogadjaj;
-use App\Models\User;
+use App\Models\Notifikacija;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class DogadjajController extends Controller
 {
@@ -29,29 +33,6 @@ class DogadjajController extends Controller
 
         return DogadjajResource::collection($dogadjaji);
     }
-    // public function index()
-    // {
-    //     $idKorisnika = auth()->id();
-    //     $user = User::findOrFail($idKorisnika);
-    //     $user = User::findOrFail($idKorisnika);
-    //     $key = 'javni_dogadjaji';
-
-    //     if ($user->uloga === 'admin') {
-    //         // Admin može da vidi sve javne događaje (i email korisnika koji ga je napravio) i svoje događaje
-    //         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
-    //             return Dogadjaj::where('privatnost', false)->with('korisnik:id,email')->with('kategorija')->get();
-    //         });
-    //         $userEvents = Dogadjaj::where('idKorisnika', $user->id)->with('kategorija')->get();
-    //     } else {
-    //         // Obični prijavljeni korisnici mogu da vide svoje događaje i javne događaje (bez emaila drugih korisnika)
-    //         $publicEvents = Cache::remember($key, now()->addMinutes(10), function () {
-    //             return Dogadjaj::where('privatnost', false)->with('kategorija')->get();
-    //         });
-    //         $userEvents = Dogadjaj::where('idKorisnika', $user->id)->with('kategorija')->get();
-    //     }
-    //     $combinedEvents = $publicEvents->concat($userEvents);
-    //     return DogadjajResource::collection($combinedEvents);
-    // }
 
     public function sviDogadjaji()
     {
@@ -78,20 +59,52 @@ class DogadjajController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'idTipaDogadjaja' => 'required|integer',
-            //'idKorisnika' => 'required|integer',
-            'naslov' => 'required|string|max:255',
-            'datumVremeOd' => 'required|date',
-            'datumVremeDo' => 'required|date|after:datumVremeOd',
-            'opis' => 'nullable|string',
-            'lokacija' => 'nullable|string|max:255',
-            'privatnost' => 'required|boolean',
-        ]);
-        $userId = auth()->id();
-        $validated['idKorisnika'] = $userId;
-        $dogadjaj = Dogadjaj::create($validated);
-        return new DogadjajResource($dogadjaj);
+        try {
+            $request->validate([
+                'naslov' => 'required|string|max:255',
+                'datumVremeOd' => 'required|date',
+                'datumVremeDo' => 'required|date|after:datumVremeOd',
+                'opis' => 'nullable|string',
+                'lokacija' => 'nullable|string|max:255',
+                'privatnost' => 'required|boolean',
+                'idTipaDogadjaja' => 'required|integer',
+                'notifikacije' => 'nullable|array',
+                'notifikacije.*.poruka' => 'required_with:notifikacije|string',
+                'notifikacije.*.vremeSlanja' => 'required_with:notifikacije|date|after_or_equal:now',
+            ]);
+
+            $dogadjaj = null;
+
+            DB::transaction(function () use ($request, &$dogadjaj) {
+                $user = Auth::user();
+                $dogadjaj = Dogadjaj::create([
+                    'naslov' => $request->input('naslov'),
+                    'datumVremeOd' => $request->input('datumVremeOd'),
+                    'datumVremeDo' => $request->input('datumVremeDo'),
+                    'opis' => $request->input('opis'),
+                    'lokacija' => $request->input('lokacija'),
+                    'privatnost' => $request->input('privatnost'),
+                    'idTipaDogadjaja' => $request->input('idTipaDogadjaja'),
+                    'idKorisnika' => $user->id,
+                ]);
+
+                if ($request->has('notifikacije')) {
+                    foreach ($request->input('notifikacije') as $notifikacijaData) {
+                        $notifikacija = Notifikacija::create([
+                            'idDogadjaja' => $dogadjaj->id,
+                            'poruka' => $notifikacijaData['poruka'],
+                            'vremeSlanja' => $notifikacijaData['vremeSlanja'],
+                            'email' => $user->email,
+                        ]);
+                    }
+                }
+            });
+
+            return response()->json($dogadjaj, 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Dogadjaj nije kreiran. Greška: ' . $e->getMessage()], 500);
+        }
     }
 
     public function update(Request $request, $id)
