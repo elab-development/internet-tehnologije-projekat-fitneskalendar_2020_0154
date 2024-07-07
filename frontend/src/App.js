@@ -7,7 +7,8 @@ import RegisterPage from './components/RegisterPage';
 import CombinedCalendar from './components/Kal';
 import Navbar from './components/Navbar';
 import WeatherForecast from './components/Prognoza';
-
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const [role, setRole] = useState(localStorage.getItem('role') || 'guest');
@@ -29,6 +30,7 @@ function App() {
         <Route path="/weather" element={<WeatherForecast />} />
         Navbar
       </Routes>
+      <ToastContainer />
     </div>
   </BrowserRouter>
 

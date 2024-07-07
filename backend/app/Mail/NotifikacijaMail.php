@@ -36,7 +36,7 @@ class NotifikacijaMail extends Mailable
     {
         // echo ("0");
         return new Envelope(
-            subject: 'Notifikacija Mail',
+            subject: 'Obaveštenje za događaj',
         );
     }
 

@@ -37,17 +37,17 @@ class PosaljiNotifikaciju extends Command
           $this->info(json_encode($notifikacije, JSON_PRETTY_PRINT));
         foreach ($notifikacije as $notifikacija) {
             try {
-
                 $dogadjaj = Dogadjaj::find($notifikacija->idDogadjaja);
     
                 if ($dogadjaj && $dogadjaj->korisnik) {
                     $user = $dogadjaj->korisnik;
-                    
-                    if (!empty($user->email)) {
+                    //mora da bude moj mejl jer mailtrap dozvoljava da se salje samo
+                    //sa mejla koji je napravio nalog na mailtrapu
+                    if (!empty($user->email) && $user->email === 'stankovicandjela53@gmail.com') {
                         Mail::to($user->email)->send(new NotifikacijaMail($notifikacija,$dogadjaj));
                         $this->info('Notifikacija poslata korisniku: ' . $user->email);
                     } else {
-                        $this->error('Email za korisnika nije postavljen.');
+                        $this->error('Email nije odgovarajuci ili je prazan. Ne saljemo notifikaciju.');
                     }
                 } else {
                     $this->error('Dogadjaj ili korisnik ne postoji.');

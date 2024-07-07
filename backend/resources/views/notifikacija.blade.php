@@ -28,8 +28,7 @@
     <title>Obaveštenje za događaj</title>
 </head>
 <body>
-    <h2>Obaveštenje za događaj</h2>
-    
+     
     <p>Poštovani,</p>
     
     <p>Ovo je podsetnik za događaj koji se približava:</p>

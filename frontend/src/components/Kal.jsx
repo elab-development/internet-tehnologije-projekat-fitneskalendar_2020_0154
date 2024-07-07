@@ -132,7 +132,7 @@ const CombinedCalendar = ({ handleRoleChange }) => {
 };
 const handleSubmitForm = (eventData) => {
   const authToken = window.localStorage.getItem('authToken');
-  fetchEvents(authToken);
+  fetchEvents(authToken);//kako bi prikazao i novonapravljeni dogadjaj
   console.log('Event Data:', eventData);
   setShowForm(false); 
 };
@@ -179,7 +179,7 @@ const handleCloseForm = () => {
         onSelectSlot={handleSelectSlot}
         eventPropGetter={token ? eventPropGetter : undefined}
         showAllEvents={true}
-        selectable={true}
+        selectable={role !== 'guest'}// gost ne moze da kreira dogadjaj pa ne sme
 
       />
       <Modal
@@ -193,8 +193,8 @@ const handleCloseForm = () => {
       </Modal>
       {showForm && (
             <div className="event-form">
-                <EventForm onSubmit={handleSubmitForm} selectedSlot={selectedSlot}/>
-                <button onClick={handleCloseForm}>Cancel</button>
+                <EventForm onSubmit={handleSubmitForm} selectedSlot={selectedSlot} role={role}/>
+                <button onClick={handleCloseForm}>Otkaži</button> 
             </div>
         )}
       </div>
