@@ -19,16 +19,16 @@ class DogadjajController extends Controller
     //     $dogadjaji = Dogadjaj::with('korisnik', 'kategorija')->get();
     //     return DogadjajResource::collection($dogadjaji);
     // }
-    public function index()  
-    { 
+    public function index()
+    {
         //dakle vraca nam sve dogadjaje koje je kreirao logovani korisnik
         //i sve dogadjaje koji su javni
         $idKorisnika = auth()->id();
 
         $dogadjaji = Dogadjaj::where(function ($query) use ($idKorisnika) {
-                $query->where('idKorisnika', $idKorisnika)
-                      ->orWhere('privatnost', false); 
-            })->with('korisnik')->with('kategorija')
+            $query->where('idKorisnika', $idKorisnika)
+                ->orWhere('privatnost', false);
+        })->with('korisnik')->with('kategorija')
             ->get();
 
         return DogadjajResource::collection($dogadjaji);
@@ -101,7 +101,6 @@ class DogadjajController extends Controller
             });
 
             return response()->json($dogadjaj, 201);
-
         } catch (\Exception $e) {
             return response()->json(['error' => 'Dogadjaj nije kreiran. Greška: ' . $e->getMessage()], 500);
         }
@@ -109,30 +108,66 @@ class DogadjajController extends Controller
 
     public function update(Request $request, $id)
     {
-        $validated = $request->validate([
-            'idTipaDogadjaja' => 'required|integer',
-            'idKorisnika' => 'required|integer',
-            'naslov' => 'required|string|max:255',
-            'datumVremeOd' => 'required|date',
-            'datumVremeDo' => 'required|date|after:datumVremeOd',
-            'opis' => 'nullable|string',
-            'lokacija' => 'nullable|string|max:255',
-            'privatnost' => 'required|boolean',
-        ]);
+
+        try {
+            $validated = $request->validate([
+                'idTipaDogadjaja' => 'required|integer',
+                'naslov' => 'required|string|max:255',
+                'datumVremeOd' => 'required|date',
+                'datumVremeDo' => 'required|date|after:datumVremeOd',
+                'opis' => 'nullable|string',
+                'lokacija' => 'nullable|string|max:255',
+                'privatnost' => 'required|boolean',
+                'notifikacije' => 'nullable|array',
+                'notifikacije.*.poruka' => 'required_with:notifikacije|string',
+                'notifikacije.*.vremeSlanja' => 'required_with:notifikacije|date|after_or_equal:now',
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Podaci nisu validni: ' . $e->getMessage()], 422);
+        }
 
         try {
             $dogadjaj = Dogadjaj::findOrFail($id);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json(['error' => 'Dogadjaj nije pronađen'], 404);
         }
-        $dogadjaj->update($validated);
+
+        if ($dogadjaj->idKorisnika !== auth()->id()) {
+            return response()->json(['message' => 'You do not have permission to update this event'], 403);
+        }
+
+        try {
+            DB::transaction(function () use ($request, $validated, $dogadjaj) {
+                $dogadjaj->update($validated);
+
+                Notifikacija::where('idDogadjaja', $dogadjaj->id)->delete();
+
+                if ($request->has('notifikacije')) {
+                    foreach ($request->input('notifikacije') as $notifikacijaData) {
+                        Notifikacija::create([
+                            'idDogadjaja' => $dogadjaj->id,
+                            'poruka' => $notifikacijaData['poruka'],
+                            'vremeSlanja' => $notifikacijaData['vremeSlanja'],
+                        ]);
+                    }
+                }
+            });
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Dogadjaj nije ažuriran. Greška: ' . $e->getMessage()], 500);
+        }
+
         return new DogadjajResource($dogadjaj);
     }
+
 
     public function destroy($id)
     {
         $dogadjaj = Dogadjaj::findOrFail($id);
+        if ($dogadjaj->idKorisnika !== auth()->id()) {
+            return response()->json(['message' => 'You do not have permission to delete this event'], 403);
+        }
         $dogadjaj->delete();
         return response()->json(['message' => 'Event successfully deleted'], 200);
     }
+
 }

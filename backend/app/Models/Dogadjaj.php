@@ -34,6 +34,6 @@ class Dogadjaj extends Model
     public function notifikacije()
     {
         //zato sto dogadjaj moze da salje vise notifikacija
-        return $this->hasMany(Notifikacija::class);
+        return $this->hasMany(Notifikacija::class,'idDogadjaja');
     }
 }

@@ -26,6 +26,7 @@ class DogadjajResource extends JsonResource
             'opis' => $this->opis,
             'lokacija' => $this->lokacija,
             'privatnost' => $this->privatnost,
+            'notifikacije' => NotifikacijaResource::collection($this->notifikacije),
         ];
     }
 }

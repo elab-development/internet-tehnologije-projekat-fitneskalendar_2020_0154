@@ -17,7 +17,7 @@ class Notifikacija extends Model
     public function dogadjaj()
     {
         //zato sto notifikacija pripada dogadjaju
-        return $this->belongsTo(Dogadjaj::class);
+        return $this->belongsTo(Dogadjaj::class,'idDogadjaja');
     }
 
     
