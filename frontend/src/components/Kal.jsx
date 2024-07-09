@@ -7,6 +7,9 @@ import axios from 'axios';
 import Modal from 'react-modal';
 import { useNavigate , Link} from 'react-router-dom';
 import EventForm from './EventForm';
+import EditEventForm from './IzmenaDogadjaja';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const localizer = momentLocalizer(moment);
 
@@ -21,7 +24,10 @@ const CombinedCalendar = ({ handleRoleChange }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const navigate = useNavigate();
   const [role, setRole] = useState('guest');
-
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [idKorisnika,setIdKorisnika]=useState(0);
+  const [isOpenModal, setIsOpenModal] = useState(false);
+  const [showFormEdit, setShowFormEdit] = useState(false);
   useEffect(() => {
     const authToken = window.localStorage.getItem('authToken');
     setToken(authToken);
@@ -64,7 +70,8 @@ const CombinedCalendar = ({ handleRoleChange }) => {
         Authorization: `Bearer ${authToken}`,
       },
     }).then(response => {
-
+     const idKor=response.data.id;
+      setIdKorisnika(idKor); //potrebno za update dogadjaja
       setIsAdmin(response.data.uloga === 'admin');
       //console.log("isAdmin:", isAdmin);
       setRole(response.data.uloga); 
@@ -81,6 +88,7 @@ const CombinedCalendar = ({ handleRoleChange }) => {
         },
       });
       let eventData = response.data.data;
+      //console.log(eventData);
       if (!Array.isArray(eventData)) {
         throw new Error('Response data is not an array');
       }
@@ -93,9 +101,12 @@ const CombinedCalendar = ({ handleRoleChange }) => {
         location: event.lokacija,
         privatnost: event.privatnost,
         korisnik:event.korisnik,
-        email:event.korisnik.email
+        idKorisnika:event.korisnik.id,
+        email:event.korisnik.email,
+        id:event.id,
+        tipDogadjaja:event.tipDogadjaj,
       }));
-     // console.log(transformedEvents);
+      //console.log(transformedEvents);
       setEvents(transformedEvents);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -123,6 +134,8 @@ const CombinedCalendar = ({ handleRoleChange }) => {
   };
 
   const handleSelectEvent = (event) => {
+    setIsOpenModal(true);
+    setIsEditMode(false); 
     setSelectedEvent(event);
   };
 
@@ -136,13 +149,23 @@ const handleSubmitForm = (eventData) => {
   console.log('Event Data:', eventData);
   setShowForm(false); 
 };
+const handleUpdateForm = (eventData) => {
+  const authToken = window.localStorage.getItem('authToken');
+  fetchEvents(authToken);
+  setShowFormEdit(false); 
+};
 const handleCloseForm = () => {
   setShowForm(false); 
 };
-
+const handleCloseFormEdit = () => {
+  setShowFormEdit(false); 
+};
 
   const closeModal = () => {
-    setSelectedEvent(null);
+   // setSelectedEvent(null);
+   //setSelectedSlot(null);
+   setIsOpenModal(false);
+ 
   };
 
   const eventPropGetter = (event) => {
@@ -151,7 +174,50 @@ const handleCloseForm = () => {
       style: { backgroundColor },
     };
   };
+  const handleEditEvent = () => {
+   setShowFormEdit(true);
+    setIsOpenModal(false);
+  };
 
+  const handleDeleteEvent = async () => {
+    const confirmDelete = window.confirm(
+      'Da li ste sigurni da želite da obrišete ovaj događaj?'
+    );
+    console.log(selectedEvent.id);
+    if (confirmDelete) {
+      try {
+        const authToken = window.localStorage.getItem('authToken');
+        const response = await axios.delete(`http://127.0.0.1:8000/api/dogadjaji/${selectedEvent.id}`, {
+          headers: {
+            Authorization: `Bearer ${authToken}`, 
+          },
+        });
+        console.log('Dogadjaj je uspešno obrisan', response.data);
+        toast.success('Događaj je uspešno izbrisan!', {
+          position: 'top-right',
+          autoClose: 2000, 
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+        fetchEvents(authToken);
+        closeModal();
+      } catch (error) {
+        console.error('Greška prilikom brisanja događaja', error);
+        toast.error('Greška prilikom brisanja događaja!', {
+          position: 'top-right',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      }
+    }
+  };
   const renderModalContent = () => (
     <div className="react-modal-content">
       <button className="close-button" onClick={closeModal}>&times;</button>
@@ -160,14 +226,22 @@ const handleCloseForm = () => {
       <p><strong>Kraj:</strong> {moment(selectedEvent.end).format('LLLL')}</p>
       <p><strong>Opis:</strong> {selectedEvent.description}</p>
       <p><strong>Lokacija:</strong> {selectedEvent.location}</p>
+      {/* <p><strong>id:</strong> {selectedEvent.id}</p>
+      <p><strong>tip:</strong> {selectedEvent.idTipa}</p> */}
       {isAdmin && selectedEvent.email && (
       <p><strong>Email korisnika koji je kreirao događaj:</strong> {selectedEvent.email}</p>
     )}
+     {role !== 'guest' && idKorisnika === selectedEvent.idKorisnika &&(
+        <div>
+          <button onClick={handleEditEvent}>Izmeni</button>
+          <button onClick={handleDeleteEvent}>Obriši</button>
+        </div>
+      )}
     </div>
   );
 
   return (
-    <div style={{ height: '600px' }}>
+    <div style={{ height: '500px' }}>
       <Calendar
         localizer={localizer}
         events={events}
@@ -183,7 +257,8 @@ const handleCloseForm = () => {
 
       />
       <Modal
-        isOpen={!!selectedEvent}
+        //isOpen={!!selectedEvent}
+        isOpen={isOpenModal}
         onRequestClose={closeModal}
         className="react-modal-content"
         overlayClassName="react-modal-overlay"
@@ -191,9 +266,15 @@ const handleCloseForm = () => {
       >
         {selectedEvent && renderModalContent()}
       </Modal>
+      {showFormEdit && (
+            <div className="event-form">
+                <EditEventForm    onUpdate={handleUpdateForm} initialValues={selectedEvent} idDogadjaja={selectedEvent.id}/>
+                <button onClick={handleCloseFormEdit}>Otkaži</button> 
+            </div>
+        )}
       {showForm && (
             <div className="event-form">
-                <EventForm onSubmit={handleSubmitForm} selectedSlot={selectedSlot} role={role}/>
+                <EventForm onSubmit={handleSubmitForm} selectedSlot={selectedSlot} role={role} />
                 <button onClick={handleCloseForm}>Otkaži</button> 
             </div>
         )}

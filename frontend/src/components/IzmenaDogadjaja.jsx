@@ -1,26 +1,24 @@
-
 import React, { useState, useEffect } from 'react';
 import moment from 'moment';
-import 'moment-timezone';
 import axios from 'axios';
-import './EventForm.css';
 import Select from 'react-select';
+import './EventForm.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
-  const [eventName, setEventName] = useState('');
-  const [location, setLocation] = useState('');
-  const [description, setDescription] = useState('');
-  const [startTime, setStartTime] = useState(moment(selectedSlot.start).format('YYYY-MM-DDTHH:mm'));
-  const [endTime, setEndTime] = useState(moment(selectedSlot.end).format('YYYY-MM-DDTHH:mm'));
+const EditEventForm = ({ initialValues, onUpdate, onCancel,idDogadjaja }) => {
+  const [title, setTitle] = useState(initialValues.title);
+  const [description, setDescription] = useState(initialValues.description);
+  const [location, setLocation] = useState(initialValues.location);
+  const [start, setStart] = useState(moment(initialValues.start).format('YYYY-MM-DDTHH:mm'));
+  const [end, setEnd] = useState(moment(initialValues.end).format('YYYY-MM-DDTHH:mm'));
+  //const [privatnost, setPrivatnost] = useState(!initialValues.privatnost);
+  const [isPublic, setIsPublic] = useState(!initialValues.privatnost);
+ const [reminders, setReminders] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
-  const [selectedEventType, setSelectedEventType] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
-  const [reminders, setReminders] = useState([]);
-  const [selectedReminderOptions, setSelectedReminderOptions] = useState([]);
-
-  
+ const [selectedReminderOptions, setSelectedReminderOptions] = useState([]);
+    const[selektovani,setSelektovani]=useState([]);
+    const [selectedEventType, setSelectedEventType] = useState(initialValues.tipDogadjaja.id);
   useEffect(() => {
     const fetchEventTypes = async () => {
       try {
@@ -36,7 +34,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           },
         });
         setEventTypes(response.data.data);
-        console.log(response.data.data);
+       // console.log(response.data.data);
       } catch (error) {
         console.error('Greška pri dobavljanju tipova događaja:', error);
       }
@@ -45,38 +43,58 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     fetchEventTypes();
   }, []);
 
-  
+  useEffect(() => {
+    const fetchEvent = async () => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+        const response = await axios.get(`http://127.0.0.1:8000/api/dogadjaji/${idDogadjaja}`,
+            {
+                headers: {
+                  Authorization: `Bearer ${authToken}`,
+                },
+              }
+        );
+        //console.log("vracen dogadjaj: "+JSON.stringify(response))
+        const reminders = getReminderOptionsForNotifications(start, JSON.stringify(response.data.data.notifikacije));
+        //console.log("podsetnici: "+JSON.stringify(reminders));
+        setSelektovani(reminders);
+      } catch (error) {
+        console.error('Greška pri dohvatanju događaja:', error);
+      }
+    };
+
+    fetchEvent();
+  }, [idDogadjaja]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const authToken = localStorage.getItem('authToken');
-
-    const eventData = {
-      idTipaDogadjaja: selectedEventType,
-      naslov: eventName,
-      datumVremeOd: startTime,
-      datumVremeDo: endTime,
+    const updatedEvent = {
+     // id: initialValues.id,
+      naslov: title,
       opis: description || null,
       lokacija: location || null,
-      privatnost: !isPublic,
+    datumVremeOd:  start,
+   datumVremeDo:   end,
+     privatnost: !isPublic,
+     idTipaDogadjaja:selectedEventType,
       notifikacije: selectedReminderOptions.some(option => option.value === 'no_reminder')
-        ? []
-        : reminders.map(reminder => ({
-            poruka: generateReminderMessage(reminder.value),
-            vremeSlanja: calculateReminderTime(reminder.value, startTime).format('YYYY-MM-DDTHH:mm:ss'),
-          })),
+      ? []
+      : reminders.map(reminder => ({
+          poruka: generateReminderMessage(reminder.value),
+          vremeSlanja: calculateReminderTime(reminder.value, start).format('YYYY-MM-DDTHH:mm:ss'),
+        })),
     };
-  
-    console.log('Podaci za slanje:', eventData);
+    console.log("apdejtovani:");
+    console.log(updatedEvent);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/dogadjaji', eventData, {
+      const response = await axios.put(`http://127.0.0.1:8000/api/dogadjaji/${initialValues.id}`, updatedEvent, {
         headers: {
-          Authorization: `Bearer ${authToken}`,
+          Authorization: `Bearer ${window.localStorage.getItem('authToken')}`,
         },
       });
-      //setCreatedEvent(response.data);
-      onSubmit(response.data);
-      console.log('Uspesno kreiran događaj:', response.data);
-      toast.success('Događaj je uspešno kreiran!', {
+     // onUpdate(response.data);
+     onUpdate(response.data);
+     toast.success('Događaj je uspešno izmenjen!', {
         position: 'top-right',
         autoClose: 2000, 
         hideProgressBar: false,
@@ -86,7 +104,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
         progress: undefined,
       });
     } catch (error) {
-      console.error('Greška prilikom kreiranja događaja:', error);
+      console.error('Error updating event:', error);
       if (error.response && error.response.status === 422) {
         toast.error('Greška: Loše uneti podaci! Molimo proverite unos.', {
           position: 'top-right',
@@ -98,8 +116,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           progress: undefined,
         });
       } else {
-        // Opšta greška za sve ostale situacije
-        toast.error('Greška prilikom kreiranja događaja!', {
+        toast.error('Greška prilikom izmene događaja!', {
           position: 'top-right',
           autoClose: 2000,
           hideProgressBar: false,
@@ -108,9 +125,10 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           draggable: true,
           progress: undefined,
         });
-      }}
+    }}
   };
 
+  
   const generateReminderMessage = (value) => {
     switch (value) {
       case 'day_before':
@@ -171,42 +189,58 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     { value: 'no_reminder', label: 'Bez' },
   ];
 
-  const handleAddReminder = (selectedOptions) => {
+const handleAddReminder = (selectedOptions) => {
     if (selectedOptions.some(option => option.value === 'no_reminder')) {
-      setReminders([]);
+     setReminders([]);
       setSelectedReminderOptions([{ value: 'no_reminder', label: 'Bez' }]);
     } else {
       setReminders(selectedOptions || []);
       setSelectedReminderOptions(selectedOptions || []);
     }
   };
+  const getReminderOption = (eventStartTime, notificationTime) => {
+    const eventTime = moment(eventStartTime) 
+    const notifyTime =  moment(notificationTime); 
+    const timeDifference = eventTime.diff(notifyTime);;
+    const minutes = timeDifference / 60000;
+    console.log(`eventTime: ${eventTime}`);
+    console.log(`notifyTime: ${notifyTime}`);
+    console.log(`timeDifference (ms): ${timeDifference}`);
+
+  if (minutes === 24 * 60) {
+    return 'day_before';
+  } else if (minutes === 60) {
+    return 'hour_before';
+  } else if (minutes === 2 * 60) {
+    return '2_hours_before';
+  } else if (minutes === 15) {
+    return '15_minutes_before';
+  } else if (minutes === 30) {
+    return '30_minutes_before';
+  } else if (minutes === 45) {
+    return '45_minutes_before';
+  } else if (minutes === 0) {
+    return 'exact_time';
+  } else {
+    return 'no_reminder';
+  }
+  }
+    const getReminderOptionsForNotifications = (eventStartTime, notificationTimesJson) => {
+        const notificationTimes = JSON.parse(notificationTimesJson);
+  return notificationTimes.map(notification => ({
+    reminderOption: getReminderOption(eventStartTime, notification.vremeSlanja)
+  }));
+      };
+
   return (
-    // <div style={{ height: '500px' }}>
-    <form onSubmit={handleSubmit} >
+    <form onSubmit={handleSubmit}>
       <div className="form-group">
-        
-        <label>
-          Ime događaja:
-          <input
-            type="text"
-            name="naslov"
-            className="form-control"
-            value={eventName}
-            onChange={(e) => setEventName(e.target.value)}
-            required
-          />
-        </label>
+        <label>Ime događaja:</label>
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
       <div className="form-group">
-        <label>
-          Lokacija:
-          <input
-            type="text"
-            className="form-control"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-          />
-        </label>
+        <label>Lokacija:</label>
+        <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
       </div>
       <div className="form-group">
         <label>
@@ -217,8 +251,8 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
             onChange={(e) => setDescription(e.target.value)}
           />
         </label>
-      </div>
-      <div className="form-group">
+      </div>   
+         <div className="form-group">
         <label>
           Tip događaja:
           <select
@@ -227,7 +261,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
             onChange={(e) => setSelectedEventType(e.target.value)}
             required
           >
-            <option value="">Izaberite tip događaja</option>
+            {/* <option value="">Izaberite tip događaja</option> */}
             {eventTypes.map((eventType) => (
               <option key={eventType.id} value={eventType.id}>
                 {eventType.naziv}
@@ -236,9 +270,24 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           </select>
         </label>
       </div>
-      <div className="form-group">
+        <div className="form-group">
         <label>
-          Podsetnici:
+          Trenutni podsetnici:
+          <div className="reminder-container">
+            <Select       
+             options={reminderOptions}
+             isMulti
+             isDisabled={true}
+             className="reminder-select"
+             value={selektovani.map(option => ({
+                value: option.reminderOption,
+                label: reminderOptions.find(opt => opt.value === option.reminderOption)?.label
+              }))}
+            />
+          </div>
+        </label>
+        <label>
+          Novi željeni podsetnici:
           <div className="reminder-container">
             <Select       
              options={reminderOptions}
@@ -260,34 +309,23 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
         />
       </label>
       <div className="form-group">
-        <label>
-          Početak događaja:
-          <input
-            type="datetime-local"
-            className="form-control"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            required
-          />
-        </label>
+        <label>Početak:</label>
+        <input type="datetime-local" value={start} onChange={(e) => setStart(e.target.value)} />
       </div>
       <div className="form-group">
-        <label>
-          Kraj događaja:
-          <input
-            type="datetime-local"
-            className="form-control"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            required
-          />
-        </label>
+        <label>Kraj:</label>
+        <input type="datetime-local" value={end} onChange={(e) => setEnd(e.target.value)} />
       </div>
-      <button type="submit" className="btn btn-primary"  >Kreiraj događaj</button>
+      
+      {/* <div>
+        <label>Tip događaja:</label>
+        <input type="text" value={idTipa} onChange={(e) => setIdTipa(e.target.value)} />
+      </div> */}
+      
+      <button type="submit"  className="btn btn-primary" >Izmeni</button>
+      
     </form>
-  
   );
-
 };
 
-export default EventForm;
+export default EditEventForm;
