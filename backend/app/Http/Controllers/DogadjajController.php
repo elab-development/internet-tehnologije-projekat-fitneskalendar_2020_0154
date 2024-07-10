@@ -169,5 +169,23 @@ class DogadjajController extends Controller
         $dogadjaj->delete();
         return response()->json(['message' => 'Event successfully deleted'], 200);
     }
+    public function dogadjajiPoTipu($idTipaDogadjaja)
+    {
+        $idKorisnika = auth()->id();
 
+
+        $dogadjaji = Dogadjaj::where(function ($query) use ($idKorisnika, $idTipaDogadjaja) {
+            $query->where('idKorisnika', $idKorisnika)
+                ->where('idTipaDogadjaja', $idTipaDogadjaja)
+                ->orWhere(function ($query) use ($idTipaDogadjaja) {
+                    $query->where('privatnost', false)
+                        ->where('idTipaDogadjaja', $idTipaDogadjaja);
+                });
+        })
+            ->with('korisnik')
+            ->with('kategorija')            
+            ->get();
+
+        return DogadjajResource::collection($dogadjaji);
+    }
 }

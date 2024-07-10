@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\DogadjajController;
+use App\Http\Controllers\IcsController;
 use App\Http\Controllers\NotifikacijaController;
 use App\Http\Controllers\PrognozaController;
 use App\Http\Controllers\TipDogadjajaController;
@@ -42,6 +43,7 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::resource('dogadjaji', DogadjajController::class);
     Route::resource('tipoviDogadjaja', TipDogadjajaController::class);
+    Route::get('/dogadjaji/poTipu/{idTipaDogadjaja}', [DogadjajController::class,'dogadjajiPoTipu']);
     Route::post('/logout', [UserController::class, 'logout']);
     Route::put('/users', [UserController::class, 'updateSelf']);
     Route::delete('/users', [UserController::class, 'deleteSelf']);

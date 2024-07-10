@@ -10,7 +10,7 @@
   border-radius: 5px;
   display: grid;
   grid-gap: 10px;
-  z-index: 1000;
+  z-index: 2000;
 }
 
 .form-group {

@@ -10,6 +10,7 @@ import EventForm from './EventForm';
 import EditEventForm from './IzmenaDogadjaja';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Footer from './Footer';
 
 const localizer = momentLocalizer(moment);
 
@@ -28,6 +29,9 @@ const CombinedCalendar = ({ handleRoleChange }) => {
   const [idKorisnika,setIdKorisnika]=useState(0);
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [showFormEdit, setShowFormEdit] = useState(false);
+  const[backgroundColor,setBackgroundColor]=useState(null);
+  const [filteredEventType, setFilteredEventType] = useState(null);
+  
   useEffect(() => {
     const authToken = window.localStorage.getItem('authToken');
     setToken(authToken);
@@ -45,6 +49,45 @@ const CombinedCalendar = ({ handleRoleChange }) => {
       checkTokenExpiration(authToken);
     } 
   });
+  useEffect(() => {
+    // fja za sortiranje
+    const fetchEvents = async (eventTypeId) => {
+      try {
+        const authToken = localStorage.getItem('authToken');
+      const response = await axios.get(`http://127.0.0.1:8000/api/dogadjaji/poTipu/${eventTypeId}`, {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        }, });
+        let eventData = response.data.data;
+
+        if (!Array.isArray(eventData)) {
+          throw new Error('Response data is not an array');
+        }
+
+        const transformedEvents = eventData.map((event) => ({
+          title: event.naslov,
+          start: moment(event.datumVremeOd).toDate(),
+          end: moment(event.datumVremeDo).toDate(),
+          description: event.opis,
+          location: event.lokacija,
+          privatnost: event.privatnost,
+          korisnik: event.korisnik,
+          email:event.korisnik.email,
+          idKorisnika: event.korisnik.id,
+          id: event.id,
+          tipDogadjaja: event.tipDogadjaj,
+        }));
+
+        setEvents(transformedEvents);
+      } catch (error) {
+        console.error('Error fetching events:', error);
+      }
+    };
+
+    if (filteredEventType) {
+      fetchEvents(filteredEventType);
+    } 
+  }, [filteredEventType]);
   
   const checkTokenExpiration = (token) => {
     const tokenExpiration = localStorage.getItem('expiration');
@@ -100,8 +143,8 @@ const CombinedCalendar = ({ handleRoleChange }) => {
         description: event.opis,
         location: event.lokacija,
         privatnost: event.privatnost,
-        korisnik:event.korisnik,
-        idKorisnika:event.korisnik.id,
+        korisnik:event.korisnik,    
+        idKorisnika:event.korisnik.id,  
         email:event.korisnik.email,
         id:event.id,
         tipDogadjaja:event.tipDogadjaj,
@@ -174,6 +217,7 @@ const handleCloseFormEdit = () => {
       style: { backgroundColor },
     };
   };
+ 
   const handleEditEvent = () => {
    setShowFormEdit(true);
     setIsOpenModal(false);
@@ -239,9 +283,15 @@ const handleCloseFormEdit = () => {
       )}
     </div>
   );
-
+  const showAllEvents = async () => {
+    const authToken = window.localStorage.getItem('authToken');
+    fetchEvents(authToken);
+  };
+  const handleEventTypeSelect = (eventTypeId) => {
+    setFilteredEventType(eventTypeId);
+  };
   return (
-    <div style={{ height: '500px' }}>
+    <div style={{ backgroundColor, height: '500px' }}>
       <Calendar
         localizer={localizer}
         events={events}
@@ -278,7 +328,9 @@ const handleCloseFormEdit = () => {
                 <button onClick={handleCloseForm}>Otkaži</button> 
             </div>
         )}
+        <Footer onEventTypeSelect={handleEventTypeSelect} showAllEvents={showAllEvents}/>
       </div>
+      
   );
 };
 
