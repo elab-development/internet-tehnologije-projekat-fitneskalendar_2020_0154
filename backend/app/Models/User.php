@@ -51,4 +51,9 @@ class User extends Authenticatable
         //zato sto korisnik moze da kreira vise dogadjaja
         return $this->hasMany(Dogadjaj::class);
     }
+    public function tipovi()
+    {
+        //zato sto korisnik moze da kreira vise tipova dogadjaja
+        return $this->hasMany(TipDogadjaja::class);
+    }
 }

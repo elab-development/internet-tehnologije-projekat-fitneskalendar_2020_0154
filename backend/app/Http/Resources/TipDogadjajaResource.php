@@ -17,7 +17,8 @@ class TipDogadjajaResource extends JsonResource
         return [
             'id' => $this-> id,
             'naziv' => $this -> naziv,
-            'opis' => $this->opis
+            'opis' => $this->opis,
+            'idKorisnika'=>$this->idKorisnika
         ];
     }
 }

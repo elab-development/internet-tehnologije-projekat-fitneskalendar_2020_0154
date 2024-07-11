@@ -5,18 +5,22 @@ namespace App\Http\Controllers;
 use App\Http\Resources\TipDogadjajaResource;
 use App\Models\TipDogadjaja;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TipDogadjajaController extends Controller
 {
     public function index()
     {
-        $eventTypes = TipDogadjaja::all();
+        $user = Auth::user();
+        $eventTypes = TipDogadjaja::where('idKorisnika', $user->id)
+            ->orWhereNull('idKorisnika')
+            ->get();
         return TipDogadjajaResource::collection($eventTypes);
     }
 
     public function store(Request $request)
     {
-        
+
         $request->validate([
             'naziv' => 'required|string|max:255',
             'opis' => 'nullable|string',
@@ -25,6 +29,7 @@ class TipDogadjajaController extends Controller
         $eventType = TipDogadjaja::create([
             'naziv' => $request->naziv,
             'opis' => $request->opis,
+            'idKorisnika' => auth()->id()
         ]);
 
         return new TipDogadjajaResource($eventType);

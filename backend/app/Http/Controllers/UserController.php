@@ -70,7 +70,6 @@ class UserController extends Controller
     public function logout(Request $request)
     {
         $request->user()->tokens()->delete();
-        $request->session()->forget('authToken');
         return response()->json(['message' => 'Successfully logged out']);
     }
 

@@ -10,7 +10,8 @@ class TipDogadjaja extends Model
     use HasFactory;
     protected $fillable = [
         'naziv',
-        'opis'
+        'opis',
+        'idKorisnika'
     ];
 
     public function dogadjaji()
@@ -18,5 +19,10 @@ class TipDogadjaja extends Model
         //zato sto jedan tip moze biti dodeljen vise dogadjaja
         //dakle jednom tipu dogadjaja pripada vise dogadjaja
         return $this->hasMany(Dogadjaj::class);
+    }
+    public function korisnik()
+    {
+        // Zato sto jedan tip dogadjaja pripada jednom korisniku
+        return $this->belongsTo(User::class, 'idKorisnika');
     }
 }

@@ -100,7 +100,7 @@ class DogadjajController extends Controller
                 }
             });
 
-            return response()->json($dogadjaj, 201);
+            return new DogadjajResource($dogadjaj);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Dogadjaj nije kreiran. Greška: ' . $e->getMessage()], 500);
         }
