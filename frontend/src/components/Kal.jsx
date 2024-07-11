@@ -281,12 +281,16 @@ const handleCloseFormEdit = () => {
           <button onClick={handleDeleteEvent}>Obriši</button>
         </div>
       )}
-       <button onClick={() => window.location.href = `http://127.0.0.1:8000/ics/${selectedEvent.id}`}>Preuzmi .ics</button>
+      <button onClick={() => window.location.href = `http://127.0.0.1:8000/ics/${selectedEvent.id}`}>Preuzmi .ics</button>
     </div>
   );
   const showAllEvents = async () => {
     const authToken = window.localStorage.getItem('authToken');
     fetchEvents(authToken);
+  };
+  const showMyEvents = async () => {
+    const authToken = window.localStorage.getItem('authToken');
+   setEvents( events.filter(event => event.privatnost === 1));
   };
   const handleEventTypeSelect = (eventTypeId) => {
     setFilteredEventType(eventTypeId);
@@ -329,7 +333,7 @@ const handleCloseFormEdit = () => {
                 <button onClick={handleCloseForm}>Otkaži</button> 
             </div>
         )}
-        <Footer onEventTypeSelect={handleEventTypeSelect} showAllEvents={showAllEvents}/>
+     { role!=="guest" && ( <Footer onEventTypeSelect={handleEventTypeSelect} showAllEvents={showAllEvents} showMyEvents={showMyEvents}/>)}
       </div>
       
   );
