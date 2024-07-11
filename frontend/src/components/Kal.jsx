@@ -281,6 +281,7 @@ const handleCloseFormEdit = () => {
           <button onClick={handleDeleteEvent}>Obriši</button>
         </div>
       )}
+       <button onClick={() => window.location.href = `http://127.0.0.1:8000/ics/${selectedEvent.id}`}>Preuzmi .ics</button>
     </div>
   );
   const showAllEvents = async () => {
