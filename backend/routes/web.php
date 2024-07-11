@@ -1,5 +1,5 @@
 <?php
-
+use App\Http\Controllers\IcsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +16,5 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/ics/{idDogadjaja}', [IcsController::class, 'generateIcs']);
+
