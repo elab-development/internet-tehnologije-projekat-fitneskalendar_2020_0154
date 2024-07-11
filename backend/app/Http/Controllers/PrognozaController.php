@@ -35,5 +35,14 @@ class PrognozaController extends Controller
             return response()->json(['error' => 'Unable to fetch weather forecast'], $response->status());
         }
     }
+    public function trenutnaLokacija()
+    {
+        try {
+            $response = Http::get('http://ipinfo.io/json');
+            return $response->json();
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve location'], 500);
+        }
+    }
     }
 
