@@ -7,7 +7,17 @@
   padding-top: 20px; 
   box-sizing: border-box;
 }
-
+.input-container{
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch; 
+}
+.kontejner{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start; 
+  align-items: center;
+}
 .weather-forecast form {
   margin-bottom: 20px;
 }
@@ -20,7 +30,9 @@
 
 .weather-forecast button {
   padding: 5px 10px;
-  width: 100px;
+  margin: 10px;
+  width: 120px;
+ 
 }
 
 .forecast-day {

@@ -11,6 +11,7 @@ const WeatherForecast = () => {
     const [error, setError] = useState('');
     const [chartData, setChartData] = useState(null); 
     const [showChart, setShowChart] = useState(false); 
+    const [fetchedCity, setFetchedCity] = useState('');
 
     const handleCityChange = (e) => {
         setCity(e.target.value);
@@ -22,6 +23,7 @@ const WeatherForecast = () => {
         try {
             const response = await axios.get(`http://127.0.0.1:8000/api/prognoza/${city}`);
             setForecastData(response.data);
+            setFetchedCity(city);
             setError('');
             setLoading(false);
         } catch (error) {
@@ -72,7 +74,7 @@ const WeatherForecast = () => {
 
         return (
             <div key={date} className="forecast-day">
-                <h3>{new Date(date).toLocaleDateString('sr-RS')}</h3>
+                 <h3>{new Date(date).toLocaleDateString('sr-RS')} {fetchedCity && `in ${fetchedCity}`}</h3>
                 <ul>
                     {data.map((item, index) => (
                         <li key={index}>
@@ -124,20 +126,60 @@ const WeatherForecast = () => {
             </div>
         );
     };
-
+    const fetchCurrentLocation = async () => {
+        setLoading(true);
+        setError('');
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/api/trenutnaLokacija');
+            setCity(response.data.city); 
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching current location:', error);
+            setLoading(false);
+            setError('Greška prilikom dobijanja trenutne lokacije.');
+        }
+    };
+    // return (
+    //     <div className="weather-forecast">
+    //         <form onSubmit={handleSubmit}>
+    //             <label htmlFor="cityInput">Unesite grad:</label>
+    //             <input
+    //                 type="text"
+    //                 id="cityInput"
+    //                 value={city}
+    //                 onChange={handleCityChange}
+    //                 required
+    //             />
+    //             <button type="submit">Prognoza</button>
+    //         </form>
+    //         {loading ? (
+    //             <div>Učitava se...</div>
+    //         ) : (
+    //             <>
+    //                 {error && <div className="error-message">{error}</div>}
+    //                 {renderForecastForCurrentPage()}
+    //             </>
+    //         )}
+    //     </div>
+    // );
     return (
         <div className="weather-forecast">
-            <form onSubmit={handleSubmit}>
-                <label htmlFor="cityInput">Unesite grad:</label>
-                <input
-                    type="text"
-                    id="cityInput"
-                    value={city}
-                    onChange={handleCityChange}
-                    required
-                />
-                <button type="submit">Prognoza</button>
+            <div className="kontejner">
+            <form onSubmit={handleSubmit} className="input-form">
+                <div className="input-container">
+                    <label htmlFor="cityInput">Unesite grad:</label>
+                    <input
+                        type="text"
+                        id="cityInput"
+                        value={city}
+                        onChange={handleCityChange}
+                        required
+                    />
+                    <button type="submit">Prognoza</button>
+                </div>
             </form>
+            <button className="location-button"  onClick={fetchCurrentLocation}>Dobavi moju lokaciju</button>
+            </div>
             {loading ? (
                 <div>Učitava se...</div>
             ) : (
@@ -148,6 +190,7 @@ const WeatherForecast = () => {
             )}
         </div>
     );
+    
 };
 
 export default WeatherForecast;
