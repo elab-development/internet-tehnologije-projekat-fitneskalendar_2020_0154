@@ -8,17 +8,30 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::all();
-        if (!$users) {
+        $key = 'korisnici';
+        if (Cache::has($key)) {
+            $korisnici = Cache::get($key);
+        } else{
+            $korisnici=User::all();
+            Cache::put($key, $korisnici, now()->addMinutes(1));
+        }
+       
+        if (!$korisnici) {
             return response()->json(['message' => 'Users not found'], 404);
         }      
-       return UserResource::collection($users);
+       return UserResource::collection($korisnici);
     }
+    protected function forgetUserCache()
+    {
+        Cache::forget('users');
+    }
+
     public function show($id)
     {
         $user = User::findOrFail($id);
@@ -36,9 +49,16 @@ class UserController extends Controller
             'password' => 'required|string|min:8|confirmed',
         ]);
 
+        // if ($validator->fails()) {
+        //     return response()->json([$validator->errors(),'error' => $validator->errors()], 422);
+        // }
         if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
+            if ($validator->errors()->has('email')) {
+                return response()->json(['error' => $validator->errors()->first('email')], 400);
+            }
+            return response()->json(['error' => 'Došlo je do greške prilikom registracije.'], 422);
         }
+    
 
         $user = User::create([
             'ime' => $request->ime,
@@ -47,7 +67,7 @@ class UserController extends Controller
             'password' => bcrypt($request->password),
             'uloga' => 'ulogovan'
         ]);
-
+        $this->forgetUserCache();
         $token = $user->createToken('authToken')->plainTextToken;
         $tokenExpiration = config('sanctum.expiration');
         return response()->json(['user' => new UserResource($user), 'token' => $token, 'uloga' => $user->uloga,'istice'=>$tokenExpiration]);
@@ -98,14 +118,20 @@ class UserController extends Controller
         }
 
         $user->update($data);
-
+        $this->forgetUserCache();
         return response()->json(new UserResource($user));
     }
 
     public function destroy($id)
     {
+        $idKorisnika = auth()->id();
+        if($id==$idKorisnika){
+            return response()->json(['message' => 'Admin ne moze izbrisati sam sebe'],400);
+        }
         $user = User::findOrFail($id);
         $user->delete();
+        
+        $this->forgetUserCache();
 
         return response()->json(['message' => 'User deleted successfully']);
     }

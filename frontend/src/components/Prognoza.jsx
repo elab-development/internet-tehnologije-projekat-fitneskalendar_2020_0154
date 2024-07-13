@@ -178,7 +178,7 @@ const WeatherForecast = () => {
                     <button type="submit">Prognoza</button>
                 </div>
             </form>
-            <button className="location-button"  onClick={fetchCurrentLocation}>Dobavi moju lokaciju</button>
+            {/* <button className="location-button"  onClick={fetchCurrentLocation}>Dobavi moju lokaciju</button> */}
             </div>
             {loading ? (
                 <div>Učitava se...</div>

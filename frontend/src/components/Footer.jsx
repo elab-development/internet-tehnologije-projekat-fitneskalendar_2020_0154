@@ -12,6 +12,15 @@ const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
   const [newEventType, setNewEventType] = useState({ naziv: "", opis: "" });
   const [uloga, setUloga] = useState("");
 
+  useEffect(() => {
+    const cachedTipovi = localStorage.getItem("tipovi");
+    if (cachedTipovi) {
+      setEventTypes(JSON.parse(cachedTipovi));
+    } else {
+      fetchEventTypes();
+    }
+  }, []);
+
   const fetchEventTypes = async () => {
     try {
       const authToken = localStorage.getItem("authToken");
@@ -32,6 +41,7 @@ const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
       );
       setEventTypes(response.data.data);
       console.log(response.data.data);
+      localStorage.setItem("tipovi", JSON.stringify(response.data.data));
     } catch (error) {
       console.error("Greška pri dobavljanju tipova događaja:", error);
     }

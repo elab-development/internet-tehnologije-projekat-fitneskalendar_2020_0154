@@ -17,6 +17,8 @@ const Navbar = ({ role,handleRoleChange }) => {
       });
       localStorage.removeItem('authToken');
       localStorage.removeItem('expiration');
+      localStorage.removeItem('users');
+      localStorage.removeItem('tipovi');
       handleRoleChange('guest');
       navigate('/kalendar');
       window.location.reload();

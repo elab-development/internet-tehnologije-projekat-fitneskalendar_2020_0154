@@ -29,6 +29,11 @@ const RegisterPage = ({ handleRoleChange }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (formData.password.length < 8) {
+      setErrorMessage('Lozinka mora imati najmanje 8 znakova.');
+      return;
+    }
+
     if (formData.password !== formData.password_confirmation) {
       setErrorMessage('Lozinke se ne podudaraju.');
       return;
@@ -60,7 +65,9 @@ const RegisterPage = ({ handleRoleChange }) => {
         password_confirmation: ''
       });
     } catch (error) {
-      if (error.response && error.response.data && typeof error.response.data === 'object') {
+      if (error.response && error.response.status === 400) {
+        setErrorMessage('Email već postoji. Molimo unesite drugi email.');
+      } else if (error.response && error.response.data && typeof error.response.data === 'object') {
         const { errors } = error.response.data;
         if (errors && typeof errors === 'object') {
           const errorMessage = Object.values(errors).flat().join(' ');

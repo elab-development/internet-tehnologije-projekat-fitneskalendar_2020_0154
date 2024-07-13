@@ -7,6 +7,7 @@ import RegisterPage from './components/RegisterPage';
 import CombinedCalendar from './components/Kal';
 import Navbar from './components/Navbar';
 import WeatherForecast from './components/Prognoza';
+import Korisnici from './components/KorisniciPage';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -28,6 +29,7 @@ function App() {
         <Route path="/register" element={<RegisterPage  handleRoleChange={handleRoleChange} />} />
         <Route path="/kalendar" element={<CombinedCalendar handleRoleChange={handleRoleChange}  />} />
         <Route path="/weather" element={<WeatherForecast />} />
+        <Route path="/korisnici" element={<Korisnici />} />
         Navbar
       </Routes>
       <ToastContainer />
