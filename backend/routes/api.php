@@ -5,6 +5,7 @@ use App\Http\Controllers\IcsController;
 use App\Http\Controllers\NotifikacijaController;
 use App\Http\Controllers\PrognozaController;
 use App\Http\Controllers\TipDogadjajaController;
+use App\Http\Controllers\LokacijaController;
 
 use App\Http\Controllers\UserController;
 use App\Http\Resources\TipDogadjajaResource;
@@ -36,6 +37,7 @@ Route::get('/dogadjaji/javni', [DogadjajController::class, 'javni']);
 Route::get('/prognoza/{lokacija}', [PrognozaController::class, 'vratiVreme']);
 Route::get('/notifikacije', [NotifikacijaController::class, 'index']);
 Route::get('/trenutnaLokacija', [PrognozaController::class, 'trenutnaLokacija']);
+Route::get('/vratiKoordinate/{adresa}', [LokacijaController::class, 'vratiKoordinate']);
 
 Route::middleware('auth:sanctum')->group(function () {
     //rute za prijavljene korisnike
