@@ -21,3 +21,15 @@ kako biste klonirali projekat
 4. Pokrenite React server komandom **npm start**
 
 Aplikacija omogućava korisnicima da kreiraju, pregledaju i upravljaju događajima na intuitivan i user-friendly način. 
+
+### Funkcionalosti
+1. Prijava i registracija
+2. Prikaz, kreiranje, izmena i brisanje događaja (privatnih i javnih)
+3. Preuzimanje .ics fajla događaja
+4. Upravljanje korisnicima (od strane admina)
+5. Filtriranje događaja u zavisnosti od tipa događaja
+6. Kreiranje i brisanje tipova događaja
+7. Slanje notifikacija (podsetnika) korisnicima u vezi događaja na email adresu
+8. Prikaz vremenske prognoze za naredna pet dana za uneto mesto
+9. Prikaz mape lokacije događaja
+10. Mesečni, nedeljni i dnevni prikaz kalendara
