@@ -27,7 +27,7 @@ function App() {
         <Route path="/" element={<CombinedCalendar />} />
         <Route path="/login" element={<LoginPage handleRoleChange={handleRoleChange} />} />
         <Route path="/register" element={<RegisterPage  handleRoleChange={handleRoleChange} />} />
-        <Route path="/kalendar" element={<CombinedCalendar handleRoleChange={handleRoleChange}  />} />
+        <Route path="/kalendar" element={<CombinedCalendar />} />
         <Route path="/weather" element={<WeatherForecast />} />
         <Route path="/korisnici" element={<Korisnici />} />
         Navbar

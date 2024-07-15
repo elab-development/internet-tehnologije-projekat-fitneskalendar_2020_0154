@@ -31,7 +31,7 @@ const LoginPage = ({ handleRoleChange }) => {
     navigate('/kalendar');
     //treba nam uloga zbog prikaza Navbara
     handleRoleChange(response.data.uloga);
-    return () => clearTimeout(timeoutId);
+    //return () => clearTimeout(timeoutId);
      
 
     } catch (error) {
@@ -43,6 +43,8 @@ const LoginPage = ({ handleRoleChange }) => {
   const handleLogout = () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('expiration');
+    localStorage.removeItem('users');
+    localStorage.removeItem('tipovi');
     handleRoleChange('guest');
     navigate('/login'); 
 };

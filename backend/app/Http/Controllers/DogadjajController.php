@@ -160,14 +160,30 @@ class DogadjajController extends Controller
     }
 
 
+    // public function destroy($id)
+    // {
+    //     $dogadjaj = Dogadjaj::findOrFail($id);
+    //     if ($dogadjaj->idKorisnika !== auth()->id()) {
+    //         return response()->json(['message' => 'You do not have permission to delete this event'], 403);
+    //     }
+    //     $dogadjaj->delete();
+    //     return response()->json(['message' => 'Event successfully deleted'], 200);
+    // }
     public function destroy($id)
     {
         $dogadjaj = Dogadjaj::findOrFail($id);
-        if ($dogadjaj->idKorisnika !== auth()->id()) {
-            return response()->json(['message' => 'You do not have permission to delete this event'], 403);
+
+        if (auth()->user()->uloga === 'admin' && !$dogadjaj->privatnost) {
+            $dogadjaj->delete();
+            return response()->json(['message' => 'Public event successfully deleted by admin'], 200);
         }
-        $dogadjaj->delete();
-        return response()->json(['message' => 'Event successfully deleted'], 200);
+    
+        if ($dogadjaj->idKorisnika === auth()->id()) {
+            $dogadjaj->delete();
+            return response()->json(['message' => 'Event successfully deleted'], 200);
+        }
+    
+        return response()->json(['message' => 'You do not have permission to delete this event'], 403);
     }
     public function dogadjajiPoTipu($idTipaDogadjaja)
     {
@@ -183,7 +199,7 @@ class DogadjajController extends Controller
                 });
         })
             ->with('korisnik')
-            ->with('kategorija')            
+            ->with('kategorija')
             ->get();
 
         return DogadjajResource::collection($dogadjaji);
