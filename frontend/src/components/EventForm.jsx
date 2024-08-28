@@ -5,6 +5,7 @@ import 'moment-timezone';
 import axios from 'axios';
 import './EventForm.css';
 import Select from 'react-select';
+import { FaGoogle } from 'react-icons/fa'; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,11 +17,11 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
   const [endTime, setEndTime] = useState(moment(selectedSlot.end).format('YYYY-MM-DDTHH:mm'));
   const [eventTypes, setEventTypes] = useState([]);
   const [selectedEventType, setSelectedEventType] = useState('');
+  const [izabraniTipGoogle, setizabraniTipGoogle] = useState(null);
   const [isPublic, setIsPublic] = useState(false);
   const [reminders, setReminders] = useState([]);
   const [selectedReminderOptions, setSelectedReminderOptions] = useState([]);
 
-  
   useEffect(() => {
     const fetchEventTypes = async () => {
       try {
@@ -170,7 +171,6 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     { value: 'exact_time', label: 'U vreme događaja' },
     { value: 'no_reminder', label: 'Bez' },
   ];
-
   const handleAddReminder = (selectedOptions) => {
     if (selectedOptions.some(option => option.value === 'no_reminder')) {
       setReminders([]);
@@ -180,8 +180,58 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
       setSelectedReminderOptions(selectedOptions || []);
     }
   };
+  const handleGoogleCalendar  = async () => {
+    console.log('Dodavanje u Google Kalendar...');
+    if (!selectedEventType) {
+      alert('Tip događaja je obavezan!');
+      return; 
+    }
+    if (!eventName) {
+      alert('Naziv događaja je obavezan!');
+      return; 
+    }
+    console.log(selectedEventType);
+    console.log(izabraniTipGoogle);
+    const eventData = {
+      idTipaDogadjaja: izabraniTipGoogle.id,
+      nazivTipaDogadjaja: izabraniTipGoogle.naziv,
+      naslov: eventName,
+      datumVremeOd: startTime,
+      datumVremeDo: endTime,
+      opis: description || null,
+      lokacija: location || null,
+     privatnost: !isPublic,
+     // notifikacije: selectedReminderOptions.some(option => option.value === 'no_reminder')
+      //  ? []
+      //  : reminders.map(reminder => ({
+      //      poruka: generateReminderMessage(reminder.value),
+      //      vremeSlanja: calculateReminderTime(reminder.value, startTime).format('YYYY-MM-DDTHH:mm:ss'),
+      //    })),
+    };
+    try
+    {
+      console.log(eventData);
+      const response = await axios.get('http://127.0.0.1:8000/google/redirect', {
+        params: eventData 
+      }); 
+     window.open(response.data.authUrl, '_blank');  
+    }  
+    catch (error) {
+      console.error('Greška prilikom kreiranja događaja:', error);}
+  };
+
+  const handleEventTypeChange = (e) => {
+    const selectedId = parseInt(e.target.value); 
+    const selectedEventTypeObject = eventTypes.find(type => type.id === selectedId); 
+    
+    setSelectedEventType(selectedId);
+    setizabraniTipGoogle(selectedEventTypeObject);
+  };
+ 
+  const handleChange = (e) => {
+    handleEventTypeChange(e); 
+  };
   return (
-    // <div style={{ height: '500px' }}>
     <form onSubmit={handleSubmit} >
       <div className="form-group">
         
@@ -224,7 +274,8 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           <select
             className="form-control"
             value={selectedEventType}
-            onChange={(e) => setSelectedEventType(e.target.value)}
+            //onChange={(e) => setSelectedEventType(e.target.value)}
+            onChange={handleChange}
             required
           >
             <option value="">Izaberite tip događaja</option>
@@ -283,7 +334,14 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           />
         </label>
       </div>
-      <button type="submit" className="btn btn-primary"  >Kreiraj događaj</button>
+      {/* <button type="submit" className="btn btn-primary"  >Kreiraj događaj</button> */}
+      <div className="form-group button-group">
+        <button type="submit" className="btn btn-primary">Kreiraj događaj</button>
+        <button type="button" className="btn-secondary" onClick={handleGoogleCalendar}>
+          Dodaj u Google kalendar 
+          <FaGoogle className="google-icon" />
+        </button>
+      </div>
     </form>
   
   );

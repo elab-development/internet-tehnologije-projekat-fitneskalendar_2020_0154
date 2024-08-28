@@ -1,4 +1,6 @@
 <?php
+
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\IcsController;
 use Illuminate\Support\Facades\Route;
 
@@ -18,3 +20,5 @@ Route::get('/', function () {
 });
 Route::get('/ics/{idDogadjaja}', [IcsController::class, 'generateIcs']);
 
+Route::get('/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
+Route::get('/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');

@@ -33,7 +33,6 @@ const CombinedCalendar = () => {
   const [showFormEdit, setShowFormEdit] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState(null);
   const [filteredEventType, setFilteredEventType] = useState(null);
-
   const [showMap, setShowMap] = useState(false); 
 
   useEffect(() => {
@@ -181,6 +180,7 @@ const CombinedCalendar = () => {
         start: moment(event.datumVremeOd).toDate(),
         end: moment(event.datumVremeDo).toDate(),
         description: event.opis,
+        id:event.id,
         location: event.lokacija,
       }));
       setEvents(transformedEvents);

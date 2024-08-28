@@ -48,3 +48,22 @@
 .btn-primary:hover {
   background-color: #0056b3;
 }
+/* ############################# */
+.form-group.button-group {
+  display: flex;
+  justify-content: space-between;
+}
+
+.btn-primary, .btn-secondary {
+  width: 48%; 
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: rgb(0, 0, 0);
+  border: none;
+}
+
+.btn-secondary:hover {
+  background-color: #ccc;
+}
