@@ -6,6 +6,7 @@ use Google_Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 
 class GoogleController extends Controller
 {
@@ -42,6 +43,7 @@ class GoogleController extends Controller
             'verify' => false
         ]));
         if ($request->has('code')) {
+            // dd($request->code);
             try {
                 $sessionDir = storage_path('framework/sessions');
 
@@ -58,14 +60,19 @@ class GoogleController extends Controller
 
 
                 $sessionContent = File::get($lastFile);
+                // dd($sessionContent);
                 $sessionArray = unserialize($sessionContent);
 
 
                 $eventDataArray = $sessionArray['eventData'] ?? null;
+                //dd($eventDataArray);
 
                 $client->fetchAccessTokenWithAuthCode($request->code);
                 $token = $client->getAccessToken();
                 session(['google_access_token' => $token]);
+
+                $serializedData = serialize($token);
+                Storage::disk('local')->put('google_token.txt', $serializedData);
 
                 $service = new \Google\Service\Calendar($client);
 
@@ -74,11 +81,11 @@ class GoogleController extends Controller
 
                     $calendarTitle = $nazivTipaDogadjaja;
 
-                    // Proveri da li kalendar već postoji po njegovom naslovu (summary)
+                    // provera da li kalendar već postoji po njegovom naslovu (summary)
                     $calendarList = $service->calendarList->listCalendarList();
                     foreach ($calendarList->getItems() as $calendarListEntry) {
                         if ($calendarListEntry->getSummary() === $calendarTitle) {
-                            // Kalendar već postoji, vrati njegov ID
+                            // kalendar već postoji, vrati njegov ID
                             return $calendarListEntry->getId();
                         }
                     }
@@ -99,23 +106,26 @@ class GoogleController extends Controller
                         throw $e;
                     }
                 }
+                $startDateTime = new \DateTime($eventDataArray['datumVremeOd'], new \DateTimeZone('Europe/Belgrade'));
+                $endDateTime = new \DateTime($eventDataArray['datumVremeDo'], new \DateTimeZone('Europe/Belgrade'));
 
+
+                $startDateTimeUTC = $startDateTime->setTimezone(new \DateTimeZone('UTC'));
+                $endDateTimeUTC = $endDateTime->setTimezone(new \DateTimeZone('UTC'));
                 $event = new \Google\Service\Calendar\Event([
                     'summary' => $eventDataArray['naslov'] ?? 'Naziv',
                     'start' => [
-                        'dateTime' => isset($eventDataArray['datumVremeOd']) ?
-                            (new \DateTime($eventDataArray['datumVremeOd']))->format(\DateTime::ATOM) :
-                            '2024-08-24T09:00:00+02:00',
-                        'timeZone' => 'Europe/Belgrade',
+                        'dateTime' => $startDateTimeUTC->format(\DateTime::ATOM),
+                        'timeZone' => 'UTC',
                     ],
                     'end' => [
-                        'dateTime' => isset($eventDataArray['datumVremeDo']) ?
-                            (new \DateTime($eventDataArray['datumVremeDo']))->format(\DateTime::ATOM) :
-                            '2024-08-24T17:00:00+02:00',
-                        'timeZone' => 'Europe/Belgrade',
+                        'dateTime' => $endDateTimeUTC->format(\DateTime::ATOM),
+                        'timeZone' => 'UTC',
                     ],
                     'visibility' => $eventDataArray['privatnost'] ? 'private' : 'public'
                 ]);
+                // dd($event->start);
+
                 if (!empty($eventDataArray['lokacija'])) {
                     $event->setLocation($eventDataArray['lokacija']);
                 }
@@ -123,7 +133,26 @@ class GoogleController extends Controller
                 if (!empty($eventDataArray['opis'])) {
                     $event->setDescription($eventDataArray['opis']);
                 }
+                $reminders = new \Google\Service\Calendar\EventReminders();
 
+                if (isset($eventDataArray['reminders']['overrides']) && is_array($eventDataArray['reminders'])) {
+                    $useDefault = $eventDataArray['reminders']['useDefault'];
+                    $reminders->setUseDefault($useDefault === 'true');
+
+                    if ($useDefault === 'false') {
+                        $overrides = [];
+                        foreach ($eventDataArray['reminders']['overrides'] as $reminder) {
+                            $eventReminder = new \Google\Service\Calendar\EventReminder();
+                            $eventReminder->setMethod($reminder['method']);
+                            $eventReminder->setMinutes((int) $reminder['minutes']);
+
+                            $overrides[] = $eventReminder;
+                        }
+                        $reminders->setOverrides($overrides);
+                    }
+
+                    $event->setReminders($reminders);
+                }
 
                 $idKalendara =  checkAndCreateCalendar($service, $eventDataArray['nazivTipaDogadjaja']);
 
@@ -137,5 +166,43 @@ class GoogleController extends Controller
         } else {
             return redirect()->route('calendar.event.create')->withErrors('Failed to retrieve authorization code.');
         }
+    }
+
+    public function logout(Request $request)
+    {
+        try {
+            $tokenPath = storage_path('app/google_token.txt');
+
+            if (file_exists($tokenPath)) {
+                $tokenData = unserialize(file_get_contents($tokenPath));
+                $accessToken = $tokenData['access_token'] ?? null;
+        
+                if ($accessToken) {
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, 'https://oauth2.googleapis.com/revoke');
+                    curl_setopt($ch, CURLOPT_POST, true);
+                    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query(['token' => $accessToken]));
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // onemogucivanje SSL verifikacije
+
+                    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                    curl_close($ch);
+        
+                    if ($httpCode == 200) {
+                        Storage::disk('local')->delete('google_token.txt');
+                        return response()->json(['message' => 'Logout uspešan'], 200);
+                    } else {
+                        return response()->json(['error' => 'Neuspelo opozivanje tokena'], 500);
+                    }
+                } else {
+                    return response()->json(['error' => 'Token nije pronađen'], 404);
+                }
+            } else {
+                return response()->json(['error' => 'Token fajl ne postoji'], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Greška prilikom logout-a: ' . $e->getMessage()], 500);
+        }
+       
     }
 }

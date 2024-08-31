@@ -207,7 +207,33 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
       //      poruka: generateReminderMessage(reminder.value),
       //      vremeSlanja: calculateReminderTime(reminder.value, startTime).format('YYYY-MM-DDTHH:mm:ss'),
       //    })),
+      reminders: {
+        useDefault: false, // iskljucivanje podrazumevanih podsetnika
+        overrides: reminders.map(reminder => {
+          
+          switch (reminder.value) {
+            case 'day_before':
+              return { method: 'email', minutes: 24 * 60 }; 
+            case 'hour_before':
+              return { method: 'email', minutes: 60 }; 
+            case '2_hours_before':
+              return { method: 'email', minutes: 120 }; 
+            case '15_minutes_before':
+              return { method: 'email', minutes: 15 }; 
+            case '30_minutes_before':
+              return { method: 'email', minutes: 30 }; 
+            case '45_minutes_before':
+              return { method: 'email', minutes: 45 }; 
+            case 'exact_time':
+              return { method: 'email', minutes: 0 };
+            default:
+              return null;
+          }
+        }).filter(reminder => reminder !== null),
+      },
     };
+    console.log("podsetnici");
+    console.log(eventData.reminders);
     try
     {
       console.log(eventData);
@@ -217,7 +243,8 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
      window.open(response.data.authUrl, '_blank');  
     }  
     catch (error) {
-      console.error('Greška prilikom kreiranja događaja:', error);}
+      console.error('Greška prilikom kreiranja događaja:', error);
+    }
   };
 
   const handleEventTypeChange = (e) => {

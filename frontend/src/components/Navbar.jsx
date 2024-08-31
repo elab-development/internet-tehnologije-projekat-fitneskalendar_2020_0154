@@ -9,22 +9,31 @@ const Navbar = ({ role,handleRoleChange }) => {
     navigate('/');
   };
   const handleLogout = async () => {
-    try {
-      await axios.post('http://127.0.0.1:8000/api/logout', null, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-        },
-      });
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('expiration');
-      localStorage.removeItem('users');
-      localStorage.removeItem('tipovi');
-      handleRoleChange('guest');
-      navigate('/kalendar');
-      window.location.reload();
-    } catch (error) {
-      console.error('Error:', error);
-    }
+  try {
+    const response = await axios.get('http://127.0.0.1:8000/google/logout');
+    
+    console.log('Logout uspešan:', response.data);
+    
+   
+  } catch (error) {
+    console.error('Greška prilikom logout-a:', error);
+  }
+  try {
+    await axios.post('http://127.0.0.1:8000/api/logout', null, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+      },
+    });
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('expiration');
+    localStorage.removeItem('users');
+    localStorage.removeItem('tipovi');
+    handleRoleChange('guest');
+    navigate('/kalendar');
+    window.location.reload();
+  } catch (error) {
+    console.error('Error:', error);
+  }
   };
   const handleLogoutAndChangeRole = () => {
     handleLogout(); 

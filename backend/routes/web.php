@@ -22,3 +22,4 @@ Route::get('/ics/{idDogadjaja}', [IcsController::class, 'generateIcs']);
 
 Route::get('/google/redirect', [GoogleController::class, 'redirect'])->name('auth.google.redirect');
 Route::get('/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('auth.google.callback');
+Route::get('/google/logout', [GoogleController::class, 'logout'])->name('auth.google.logout');

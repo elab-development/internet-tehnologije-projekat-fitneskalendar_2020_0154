@@ -14,7 +14,7 @@
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 9px;
 }
 
 .form-group label {
@@ -26,7 +26,7 @@
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 5px;
+  padding: 3px;
   font-size: 14px;
   border: 1px solid #ccc;
   border-radius: 3px;
@@ -42,13 +42,16 @@
 
 .form-group .form-check-input {
   align-self: center;
-  margin-right: px;
+  margin-right: 7px;
 }
 
 .btn-primary:hover {
   background-color: #0056b3;
 }
-/* ############################# */
+
+
+
+
 .form-group.button-group {
   display: flex;
   justify-content: space-between;
@@ -67,3 +70,4 @@
 .btn-secondary:hover {
   background-color: #ccc;
 }
+
