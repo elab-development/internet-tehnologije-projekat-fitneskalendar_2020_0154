@@ -4,6 +4,7 @@ import "./KorisniciPage.css";
 import Popup from "reactjs-popup";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import api from "../Api";
 
 const Korisnici = () => {
   const [users, setUsers] = useState([]);
@@ -28,11 +29,7 @@ const Korisnici = () => {
 
   const fetchUsers = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/users", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const response = await api.vratiKorisnike(token);
       const usersData = response.data.data;
       setUsers(response.data.data);
       localStorage.setItem("users", JSON.stringify(usersData));
@@ -46,14 +43,7 @@ const Korisnici = () => {
     console.log("id kor:" + id);
 
     try {
-      const response = await axios.delete(
-        `http://127.0.0.1:8000/api/users/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await api.izbrisiKorisnika(id,token);
       console.log(response);
       toast.success("Korisnik je uspešno izbrisan!", {
         position: "top-right",
@@ -91,11 +81,7 @@ const Korisnici = () => {
 
   const handleSave = async (id, updatedData) => {
     try {
-      await axios.put(`http://127.0.0.1:8000/api/users/${id}`, updatedData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.izmeniKorisnika(id,updatedData,token);
       setEditingUser(null);
       fetchUsers();
       toast.success("Korisnik je uspešno izmenjen!", {

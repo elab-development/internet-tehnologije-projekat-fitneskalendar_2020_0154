@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import './RegisterPage.css';
 import{ useNavigate}  from 'react-router-dom';
-
+import api from'../Api'
 
 const RegisterPage = ({ handleRoleChange }) => {
   const [formData, setFormData] = useState({
@@ -40,7 +40,8 @@ const RegisterPage = ({ handleRoleChange }) => {
     }
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
+      // const response = await axios.post('http://127.0.0.1:8000/api/register', formData);
+      const response=await api.registracija(formData);
       console.log('Registration successful', response.data);
       setSuccessMessage('Uspešno ste se registrovali!');
       window.localStorage.setItem("authToken",response.data.token);

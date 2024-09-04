@@ -4,6 +4,7 @@ import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import api from "../Api";
 
 const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
   const [eventTypes, setEventTypes] = useState([]);
@@ -31,14 +32,7 @@ const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
       const ul = localStorage.getItem("role");
       setUloga(ul);
       console.log("uloga" + uloga);
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/tipoviDogadjaja",
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+      const response = await api.vratiTipoveDogadjaja(authToken);
       setEventTypes(response.data.data);
       console.log(response.data.data);
       localStorage.setItem("tipovi", JSON.stringify(response.data.data));
@@ -73,15 +67,7 @@ const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
         return;
       }
 
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/tipoviDogadjaja",
-        newEventType,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
+      const response = await api.napraviTipDogadjaja(newEventType,authToken);
       setEventTypes([...eventTypes, response.data.data]);
       setNewEventType({ naziv: "", opis: "" });
       // console.log(newEventType);
@@ -110,11 +96,7 @@ const Footer = ({ onEventTypeSelect, showAllEvents,showMyEvents }) => {
         return;
       }
 
-      await axios.delete(`http://127.0.0.1:8000/api/tipoviDogadjaja/${id}`, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+      await api.izbrisiTipDogadjaja(id,authToken);
       setEventTypes(eventTypes.filter((type) => type.id !== id));
       console.log("Tip događaja je uspešno obrisan.");
     } catch (error) {

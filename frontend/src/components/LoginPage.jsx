@@ -3,6 +3,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import './LoginPage.css';
+import api from'../Api'
 
 const LoginPage = ({ handleRoleChange }) => {
   const [email, setEmail] = useState('');
@@ -15,7 +16,8 @@ const LoginPage = ({ handleRoleChange }) => {
     event.preventDefault();
     try {
 
-      const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password }, { withCredentials: true });
+      //const response = await axios.post('http://127.0.0.1:8000/api/login', { email, password }, { withCredentials: true });
+      const response=await api.login(email,password);
       console.log('Login successful', response.data);
       window.localStorage.setItem("authToken",response.data.token);
     

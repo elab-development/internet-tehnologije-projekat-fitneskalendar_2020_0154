@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { Chart } from 'react-google-charts';
 import './Prognoza.css'; 
+import api from "../Api";
 
 const WeatherForecast = () => {
     const [city, setCity] = useState('');
@@ -21,7 +22,7 @@ const WeatherForecast = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await axios.get(`http://127.0.0.1:8000/api/prognoza/${city}`);
+            const response = await api.vratiPrognozu(city);
             setForecastData(response.data);
             setFetchedCity(city);
             setError('');
@@ -126,19 +127,7 @@ const WeatherForecast = () => {
             </div>
         );
     };
-    const fetchCurrentLocation = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            const response = await axios.get('http://127.0.0.1:8000/api/trenutnaLokacija');
-            setCity(response.data.city); 
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching current location:', error);
-            setLoading(false);
-            setError('Greška prilikom dobijanja trenutne lokacije.');
-        }
-    };
+  
     // return (
     //     <div className="weather-forecast">
     //         <form onSubmit={handleSubmit}>

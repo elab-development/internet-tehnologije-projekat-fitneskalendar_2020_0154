@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './Navbar.css';
 import axios from 'axios';
+import api from "../Api";
 const Navbar = ({ role,handleRoleChange }) => {
   const navigate = useNavigate();
 
@@ -10,7 +11,7 @@ const Navbar = ({ role,handleRoleChange }) => {
   };
   const handleLogout = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:8000/google/logout');
+    const response = await api.googleLogout();
     
     console.log('Logout uspešan:', response.data);
     
@@ -19,11 +20,7 @@ const Navbar = ({ role,handleRoleChange }) => {
     console.error('Greška prilikom logout-a:', error);
   }
   try {
-    await axios.post('http://127.0.0.1:8000/api/logout', null, {
-      headers: {
-        Authorization: `Bearer ${localStorage.getItem('authToken')}`,
-      },
-    });
+    await api.logout(localStorage.getItem('authToken'));
     localStorage.removeItem('authToken');
     localStorage.removeItem('expiration');
     localStorage.removeItem('users');

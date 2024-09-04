@@ -8,6 +8,7 @@ import Select from 'react-select';
 import { FaGoogle } from 'react-icons/fa'; 
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import api from '../Api';
 
 const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
   const [eventName, setEventName] = useState('');
@@ -31,11 +32,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
           return;
         }
 
-        const response = await axios.get('http://127.0.0.1:8000/api/tipoviDogadjaja', {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        });
+        const response = await api.vratiTipoveDogadjaja(authToken);
         setEventTypes(response.data.data);
         console.log(response.data.data);
       } catch (error) {
@@ -52,7 +49,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     const authToken = localStorage.getItem('authToken');
 
     const eventData = {
-      idTipaDogadjaja: selectedEventType,
+      idTipaDogadjaja: selectedEventType? selectedEventType : 7,
       naslov: eventName,
       datumVremeOd: startTime,
       datumVremeDo: endTime,
@@ -69,11 +66,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
   
     console.log('Podaci za slanje:', eventData);
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/dogadjaji', eventData, {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+      const response = await api.napraviDogadjaj(authToken,eventData);
       //setCreatedEvent(response.data);
       onSubmit(response.data);
       console.log('Uspesno kreiran događaj:', response.data);
@@ -182,10 +175,10 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
   };
   const handleGoogleCalendar  = async () => {
     console.log('Dodavanje u Google Kalendar...');
-    if (!selectedEventType) {
-      alert('Tip događaja je obavezan!');
-      return; 
-    }
+    // if (!selectedEventType) {
+    //   alert('Tip događaja je obavezan!');
+    //   return; 
+    // }
     if (!eventName) {
       alert('Naziv događaja je obavezan!');
       return; 
@@ -193,7 +186,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     console.log(selectedEventType);
     console.log(izabraniTipGoogle);
     const eventData = {
-      idTipaDogadjaja: izabraniTipGoogle.id,
+      idTipaDogadjaja: izabraniTipGoogle.id?izabraniTipGoogle.id:7,
       nazivTipaDogadjaja: izabraniTipGoogle.naziv,
       naslov: eventName,
       datumVremeOd: startTime,
@@ -237,9 +230,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
     try
     {
       console.log(eventData);
-      const response = await axios.get('http://127.0.0.1:8000/google/redirect', {
-        params: eventData 
-      }); 
+      const response = api.googleRedirect(eventData);
      window.open(response.data.authUrl, '_blank');  
     }  
     catch (error) {
@@ -303,7 +294,7 @@ const EventForm = ({ onSubmit, selectedSlot,initialValues }) => {
             value={selectedEventType}
             //onChange={(e) => setSelectedEventType(e.target.value)}
             onChange={handleChange}
-            required
+            // required
           >
             <option value="">Izaberite tip događaja</option>
             {eventTypes.map((eventType) => (

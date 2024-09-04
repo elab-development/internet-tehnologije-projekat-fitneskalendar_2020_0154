@@ -45,6 +45,7 @@ Route::middleware('auth:sanctum')->group(function () {
         return auth()->user();
     });
     Route::resource('dogadjaji', DogadjajController::class);
+    Route::get('korisnikoviDogadjaji', [DogadjajController::class,'korisnikoviDogadjaji']);
     Route::resource('tipoviDogadjaja', TipDogadjajaController::class);
     Route::get('/dogadjaji/poTipu/{idTipaDogadjaja}', [DogadjajController::class,'dogadjajiPoTipu']);
     Route::post('/logout', [UserController::class, 'logout']);
