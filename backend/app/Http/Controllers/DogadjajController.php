@@ -6,10 +6,12 @@ use App\Http\Resources\DogadjajResource;
 use App\Mail\NotifikacijaMail;
 use App\Models\Dogadjaj;
 use App\Models\Notifikacija;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class DogadjajController extends Controller
@@ -56,7 +58,13 @@ class DogadjajController extends Controller
         $dogadjaj = Dogadjaj::with('korisnik', 'kategorija')->findOrFail($id);
         return new DogadjajResource($dogadjaj);
     }
+    public function korisnikoviDogadjaji()
+    {
+        $idKorisnika = auth()->id();
+        $dogadjaji = Dogadjaj::where('idKorisnika', $idKorisnika)->with('korisnik')->with('kategorija')->get();
 
+        return DogadjajResource::collection($dogadjaji);
+    }
     public function store(Request $request)
     {
         try {
@@ -137,13 +145,54 @@ class DogadjajController extends Controller
         }
 
         try {
+            // DB::transaction(function () use ($request, $validated, $dogadjaj) {
+            //     $dogadjaj->update($validated);
+            //     Log::info($request);
+            //     Notifikacija::where('idDogadjaja', $dogadjaj->id)->delete();
+
+            //     if ($request->has('notifikacije')) {
+            //         foreach ($request->input('notifikacije') as $notifikacijaData) {
+            //             Notifikacija::create([
+            //                 'idDogadjaja' => $dogadjaj->id,
+            //                 'poruka' => $notifikacijaData['poruka'],
+            //                 'vremeSlanja' => $notifikacijaData['vremeSlanja'],
+            //             ]);
+            //         }
+            //     }
+            // });
             DB::transaction(function () use ($request, $validated, $dogadjaj) {
+                $originalDatumVremeOd = Carbon::parse($dogadjaj->datumVremeOd);
+            
+                // Ažuriraj događaj
                 $dogadjaj->update($validated);
-
-                Notifikacija::where('idDogadjaja', $dogadjaj->id)->delete();
-
-                if ($request->has('notifikacije')) {
-                    foreach ($request->input('notifikacije') as $notifikacijaData) {
+            
+                // Dobavi notifikacije iz requesta
+                $notifikacijeIzRequesta = $request->has('notifikacije') ? $request->input('notifikacije') : [];
+            
+                // Kreiraj niz poruka iz requesta za lakše pretrage
+                $porukeIzRequesta = array_column($notifikacijeIzRequesta, 'poruka');
+            
+                // Ažuriraj ili izbriši postojeće notifikacije
+                foreach ($dogadjaj->notifikacije as $notifikacija) {
+                    if (in_array($notifikacija->poruka, $porukeIzRequesta)) {
+                        // Ako je notifikacija prisutna u requestu, ažuriraj njeno vreme slanja
+                        $originalnoVremeSlanja = Carbon::parse($notifikacija->vremeSlanja);
+                        $razlikaUminutima = $originalDatumVremeOd->diffInMinutes($originalnoVremeSlanja);
+                        $noviDatumVremeOd = Carbon::parse($dogadjaj->datumVremeOd);
+                        $novoVremeSlanja = $noviDatumVremeOd->copy()->subMinutes($razlikaUminutima);
+            
+                        $notifikacija->update(['vremeSlanja' => $novoVremeSlanja]);
+                    } else {
+                        // Ako notifikacija nije prisutna u requestu, obriši je
+                        $notifikacija->delete();
+                    }
+                }
+            
+                // Dodaj nove notifikacije koje nisu prisutne u bazi
+                foreach ($notifikacijeIzRequesta as $notifikacijaData) {
+                    if (!Notifikacija::where('idDogadjaja', $dogadjaj->id)
+                                    ->where('poruka', $notifikacijaData['poruka'])
+                                    ->exists()) {
                         Notifikacija::create([
                             'idDogadjaja' => $dogadjaj->id,
                             'poruka' => $notifikacijaData['poruka'],
@@ -152,6 +201,8 @@ class DogadjajController extends Controller
                     }
                 }
             });
+            
+            
         } catch (\Exception $e) {
             return response()->json(['error' => 'Dogadjaj nije ažuriran. Greška: ' . $e->getMessage()], 500);
         }
@@ -177,12 +228,12 @@ class DogadjajController extends Controller
             $dogadjaj->delete();
             return response()->json(['message' => 'Public event successfully deleted by admin'], 200);
         }
-    
+
         if ($dogadjaj->idKorisnika === auth()->id()) {
             $dogadjaj->delete();
             return response()->json(['message' => 'Event successfully deleted'], 200);
         }
-    
+
         return response()->json(['message' => 'You do not have permission to delete this event'], 403);
     }
     public function dogadjajiPoTipu($idTipaDogadjaja)

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, momentLocalizer } from "react-big-calendar";
+import { Calendar, momentLocalizer,Views  } from "react-big-calendar";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import "./Kalendar.css";
 import moment from "moment";
@@ -11,6 +11,11 @@ import EditEventForm from "./IzmenaDogadjaja";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Footer from "./Footer";
+import api from "../Api";
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
 
 import MapDisplay from "./Map";
 
@@ -35,6 +40,8 @@ const CombinedCalendar = () => {
   const [filteredEventType, setFilteredEventType] = useState(null);
   const [showMap, setShowMap] = useState(false); 
 
+  const DragAndDropCalendar = withDragAndDrop(Calendar);
+  
   useEffect(() => {
     const authToken = window.localStorage.getItem("authToken");
     setToken(authToken);
@@ -57,14 +64,7 @@ const CombinedCalendar = () => {
     const fetchEvents = async (eventTypeId) => {
       try {
         const authToken = localStorage.getItem("authToken");
-        const response = await axios.get(
-          `http://127.0.0.1:8000/api/dogadjaji/poTipu/${eventTypeId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
+        const response = await api.vratiKonkretniTipDogadjaja(eventTypeId,authToken);
         let eventData = response.data.data;
 
         if (!Array.isArray(eventData)) {
@@ -95,7 +95,29 @@ const CombinedCalendar = () => {
       fetchEvents(filteredEventType);
     }
   }, [filteredEventType]);
-
+  const prikaziToast = (poruka, uspesno) => {
+    if (uspesno) {
+      toast.success(poruka, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    } else {
+      toast.error(poruka, {
+        position: "top-right",
+        autoClose: 2000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+  };
   // const checkTokenExpiration = (token) => {
   //   const tokenExpiration = localStorage.getItem("expiration");
 
@@ -115,12 +137,7 @@ const CombinedCalendar = () => {
   //   navigate("/login");
   // };
   const checkAdminStatus = (authToken) => {
-    axios
-      .get("http://127.0.0.1:8000/api/user", {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      })
+    api.vratiKorisnika(authToken)
       .then((response) => {
         const idKor = response.data.id;
         setIdKorisnika(idKor); //potrebno za update dogadjaja
@@ -135,11 +152,7 @@ const CombinedCalendar = () => {
 
   const fetchEvents = async (authToken) => {
     try {
-      const response = await axios.get("http://127.0.0.1:8000/api/dogadjaji", {
-        headers: {
-          Authorization: `Bearer ${authToken}`,
-        },
-      });
+      const response = await api.vratiDogadjaje(authToken);
       let eventData = response.data.data;
       //console.log(eventData);
       if (!Array.isArray(eventData)) {
@@ -168,9 +181,7 @@ const CombinedCalendar = () => {
 
   const fetchPublicEvents = async () => {
     try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/api/dogadjaji/javni"
-      );
+      const response = await api.vratiJavneDogadjaje();
       let eventData = response.data.data;
       if (!Array.isArray(eventData)) {
         throw new Error("Response data is not an array");
@@ -244,37 +255,14 @@ const CombinedCalendar = () => {
     if (confirmDelete) {
       try {
         const authToken = window.localStorage.getItem("authToken");
-        const response = await axios.delete(
-          `http://127.0.0.1:8000/api/dogadjaji/${selectedEvent.id}`,
-          {
-            headers: {
-              Authorization: `Bearer ${authToken}`,
-            },
-          }
-        );
+        const response = await api.izbrisiDogadjaj(selectedEvent.id,authToken);
         console.log("Dogadjaj je uspešno obrisan", response.data);
-        toast.success("Događaj je uspešno izbrisan!", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        prikaziToast("Događaj je uspešno izbrisan!",true);
         fetchEvents(authToken);
         closeModal();
       } catch (error) {
         console.error("Greška prilikom brisanja događaja", error);
-        toast.error("Greška prilikom brisanja događaja!", {
-          position: "top-right",
-          autoClose: 2000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+        prikaziToast("Greška prilikom brisanja događaja!",false);
       }
     }
   };
@@ -339,15 +327,77 @@ const CombinedCalendar = () => {
   };
   const showMyEvents = async () => {
     const authToken = window.localStorage.getItem("authToken");
-    setEvents(events.filter((event) => event.privatnost === 1));
+   // const response=api.vratiDogadjajeKorisnika()
+   try {
+    const response = await api.korisnikoviDogadjaji(authToken);
+    let eventData = response.data.data;
+
+    const transformedEvents = eventData.map((event) => ({
+      title: event.naslov,
+      start: moment(event.datumVremeOd).toDate(),
+      end: moment(event.datumVremeDo).toDate(),
+      description: event.opis,
+      location: event.lokacija,
+      privatnost: event.privatnost,
+      korisnik: event.korisnik,
+      idKorisnika: event.korisnik.id,
+      email: event.korisnik.email,
+      id: event.id,
+      tipDogadjaja: event.tipDogadjaj,
+    }));
+    setEvents(transformedEvents);
+    console.log("dogadjaji korisnika:");
+    console.log(eventData);
+   }catch(error){
+    console.error("Došlo je do greške prilikom preuzimanja događaja:", error);
+    }
+    // setEvents(events.filter((event) => event.privatnost === 1));
   };
   const handleEventTypeSelect = (eventTypeId) => {
     setFilteredEventType(eventTypeId);
   };
+  const onEventDrop = async ({ event, start, end }) => {
+    if (idKorisnika !== event.korisnik.id) {
+      prikaziToast("Nemate pravo da menjate ovaj događaj!",false);
+      return;
+    }
+    const updatedEvent = { ...event, start, end };
+
+    const updatedEvents = events.map(existingEvent =>
+      existingEvent.id === event.id
+        ? updatedEvent
+        : existingEvent
+    );
+    const transformisaniUpdate = {
+      naslov: updatedEvent.title,
+      opis: updatedEvent.description || null,
+      lokacija: updatedEvent.location || null,
+      datumVremeOd: moment(updatedEvent.start).format('YYYY-MM-DD HH:mm:ss'),
+      datumVremeDo:  moment(updatedEvent.end).format('YYYY-MM-DD HH:mm:ss'),
+      privatnost: updatedEvent.privatnost,
+      idTipaDogadjaja: updatedEvent.tipDogadjaja.id,
+    };
+    setEvents(updatedEvents);
+    console.log("apdejtovani:");
+    console.log(updatedEvent);
+    try {
+    const authToken = window.localStorage.getItem("authToken");
+      const response = await api.izmeniDogadjaj(event.id, transformisaniUpdate, authToken);
+      prikaziToast("Uspešno izmenjen datum događaja!",true);
+    } catch (error) {
+      prikaziToast("Greška pri izmeni datuma događaja!",false);
+      setEvents(prevEvents => prevEvents.map(existingEvent =>
+        existingEvent.id === event.id
+          ? { ...existingEvent, start: event.start, end: event.end }
+          : existingEvent
+      ));
+    }
+  }
   
   return (
     <div style={{ backgroundColor, height: "500px" }}>
-      <Calendar
+      <DndProvider backend={HTML5Backend}>
+      <DragAndDropCalendar
         localizer={localizer}
         events={events}
         views={["month", "week", "day", "agenda"]}
@@ -358,8 +408,10 @@ const CombinedCalendar = () => {
         onSelectSlot={handleSelectSlot}
         eventPropGetter={token ? eventPropGetter : undefined}
         showAllEvents={true}
-        selectable={role !== "guest"} // gost ne moze da kreira dogadjaj pa ne sme
-      />
+        selectable={role !== "guest"}
+        onEventDrop={role !== 'guest' ? onEventDrop : undefined}
+        />
+        </DndProvider>
       <Modal
         //isOpen={!!selectedEvent}
         isOpen={isOpenModal}
