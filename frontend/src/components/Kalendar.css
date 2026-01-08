@@ -1,0 +1,135 @@
+.react-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.react-modal-content {
+  position: relative;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1001;
+  max-width: 600px; 
+  width: 90%; 
+  overflow-wrap: break-word;
+  overflow: hidden; 
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  left: 200px;
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #000;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px;
+  background-color: #f8d7da;
+}
+
+.calendar-header a {
+  color: #dc3545;
+  padding: 14px 20px;
+  text-decoration: none;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.calendar-header a:hover {
+  background-color: #dc3545;
+  color: #f8d7da;
+  text-decoration: none;
+  border-radius: 20px;
+}
+
+.auth-link {
+  margin-left: 10px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.calendar-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.calendar-container {
+  flex: 1;
+  margin: 50px 10px;
+}
+
+.rbc-calendar {
+  max-width: 100%;
+}
+.rbc-toolbar {
+  display: flex;
+  justify-content: space-between; 
+  flex-wrap: nowrap; 
+  gap: 10px;
+}
+
+.rbc-btn-group {
+  display: flex;
+  flex-wrap: nowrap; 
+  gap: 5px; 
+}
+
+.rbc-btn-group .rbc-btn {
+  padding: 5px 8px;
+  flex: 1 1 auto;
+  max-width: 80px; 
+  white-space: nowrap; 
+  font-size: 12px; 
+}
+.rbc-toolbar-label {
+  color: #dc3545;
+  font-weight: bold;
+  font-size: larger;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.react-modal-content button {
+  margin: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+}
+input[type="checkbox"]{
+height: 13px;
+margin-bottom: 0px;
+}
+.googleDugme{
+  background-color: #f8d7da;
+  color: rgb(0, 0, 0);
+  border: none;
+}
+.googleDugme:hover{
+  background-color: #ccc;
+}
+.google-icon{
+  margin-left: 4px;
+  margin-bottom: 4px;
+}
